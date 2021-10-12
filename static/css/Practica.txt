@@ -1,0 +1,23 @@
+todos los switch
+
+
+Switch>enable
+Switch#conf t
+Switch(config)#host sw_edi_i "aqui le cambian segun el nombre del switch"
+sw_edi_i(config)#enable secret class
+sw_edi_i(config)#username arios password 0 cisco "aqui ponen su inicial y su apellido"
+sw_edi_i(config)#line vty 0 15
+sw_edi_i(config-line)#transport input ssh 
+sw_edi_rectoria(config)#vlan 260 "esto depende de su numero de lista"
+sw_edi_rectoria(config-vlan)#vlan 261
+sw_edi_rectoria(config-vlan)#vlan 262
+sw_edi_rectoria(config-vlan)#vlan 263
+
+
+utch.edu.mx y utch2.edu.mx
+
+
+utch2(config)#ip domain-name utch2.edu.mx "aqui tambien segun el switch"
+utch2(config)#crypto key generate rsa
+
+

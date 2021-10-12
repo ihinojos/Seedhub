@@ -1,0 +1,260 @@
+:root
+{
+    --blanco: #ffffff;
+    --Oscuro: #212121;
+    --primario: rgb(158, 81, 194);
+    --secundario: #5dbaf0;
+    --gris: #757575;
+}
+
+html
+{
+    font-size: 62.5%;
+    box-sizing: inherit;
+}
+
+*, *:before, *:after
+{
+    box-sizing: inherit;
+}
+
+body
+{
+    font-size: 16px;
+    font-family: 'Helvetica', sans-serif;
+
+    background-image: linear-gradient(to right, #f0f0f5 0%, var(--blanco)100%);
+}
+
+h1
+{
+    font-size: 3.8rem;
+}
+
+h2
+{
+    font-size: 2.8rem;
+}
+
+h3
+{
+    font-size: 1.8rem;
+}
+
+h1, h2, h3
+{
+    text-align: center;
+}
+
+.titulo
+{
+    text-align: center;
+    font-size: 3rem;
+}
+
+.sombra{
+    -webkit-box-shadow: 0px 5px 15px 0px rgba(0, 0, 0, 0.65);
+    -moz-box-shadow: 0px 5px 15px 0px rgba(0, 0, 0, 0.69);
+    box-shadow: 0px 5px 15px 0px rgba(0, 0, 0, 0.69);
+
+    padding: 2rem;
+    border-radius: 1rem;
+}
+
+.titulo span
+{
+    font-size: 2rem;
+}
+
+
+p{
+    color: rgb(180, 128, 169);
+}
+
+.nav-bg
+{
+    background-color: var(--secundario);
+}
+
+.contenedor
+{
+
+    max-width: 120rem;
+    margin: 30px;
+}
+
+.boton{
+    background-color: var(--secundario);
+    color: var(--blanco);
+
+    padding: 1rem 3rem;
+
+    margin-top: 1rem;
+    font-size: 3rem;
+
+    text-decoration: none;
+    text-transform: uppercase;
+
+    font-weight: bold;
+
+    border-radius: 0.8rem;
+
+    width: 90%;
+    text-align: center;
+}
+
+@media(min-width: 768px){
+    .boton{
+        width: auto;
+    }
+}
+
+.navegacion-principal
+{
+    padding: 1rem;
+    display: flex;
+    
+
+    flex-direction: column;
+}
+
+.navegacion-principal a
+{
+    color: var(--blanco);
+    text-decoration: none;
+    font-size: 2rem;
+    font-weight: 700;
+    padding: 1rem;
+}
+
+.navegacion-principal a:hover
+{
+    background-color: var(--primario);
+    columns: var(--Oscuro);
+}
+
+.navegacion-principal a
+{
+    color: var(--blanco);
+    text-decoration: none;
+    font-size: 2rem;
+    font-weight: 700;
+    padding: 1rem;
+}
+
+.navegacion-principal a:hover
+{
+    background-color: var(--primario);
+    color: var(--Oscuro);
+}
+
+.navegacion-principal a:visited
+{
+    color: rgb(218, 140, 21);
+}
+
+.Imagen{
+    background-image: url(images/background.jpg);
+    /* Le quitamos que se repita */
+    /* background-repeat: no-repeat; */
+    background-repeat: no-repeat;
+    /* background-size: 100% 100%; */
+    background-size: cover;
+    height: 450px;
+
+    position: relative;
+    
+    color: var(--blanco);
+
+    margin-bottom: 3rem;
+}
+
+.contenido-Imagen
+{
+    position: absolute;
+    /* Sintaxis anterior */
+    background-color: rgb(0, 0, 0, .8);
+    background-color: rgb(0 0 0 / 80%);
+    width: 100%;
+    height: 100%;
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.contenido-Imagen h2,
+.contenido-Imagen p{
+    color: var(--blanco);
+}
+
+.contenido-Imagen .ubicacion{
+    display: flex;
+    align-items: flex-start;
+}
+
+@media (min-width: 768px){
+    .servicios{
+        /* Nos agrega las propiedades de Css grid */
+        display: grid;
+        /* Se define dos columnas de 300 pixeles*/
+        /* grid-template-columns: 300px 300px; */
+        /* grid-template-columns: 33.3% 33.3% 33.3%; */
+        /* grid-template-columns: 1fr 1fr 1fr; */
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+
+.ubicacion
+{
+    display: flex;
+    align-items: flex-end;
+    
+}
+
+@media(min-width: 720px)
+{
+    body
+    {
+        background-color: blue;
+    }
+}
+
+body
+{
+    background-color: #FFC107;
+    font-size: 3rem;
+}
+
+@media(min-width: 480px)
+{
+    body
+    {
+        background-color: blue;
+    }
+}
+
+@media(min-width: 768px)
+{
+    body
+    {
+        background-color: aqua;
+    }
+}
+
+@media(min-width: 768px){
+    .servicios{
+        display: grid;
+        grid-template-columns: repeat();
+    }
+}
+
+@media(min-width: 768px)
+{
+    .navegacion-principal{
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}  
