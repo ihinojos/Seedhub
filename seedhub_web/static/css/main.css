@@ -155,10 +155,7 @@ p{
 
 .Imagen{
     background-image: url(images/background.jpg);
-    /* Le quitamos que se repita */
-    /* background-repeat: no-repeat; */
     background-repeat: no-repeat;
-    /* background-size: 100% 100%; */
     background-size: cover;
     height: 450px;
 
@@ -172,7 +169,6 @@ p{
 .contenido-Imagen
 {
     position: absolute;
-    /* Sintaxis anterior */
     background-color: rgb(0, 0, 0, .8);
     background-color: rgb(0 0 0 / 80%);
     width: 100%;
@@ -196,12 +192,7 @@ p{
 
 @media (min-width: 768px){
     .servicios{
-        /* Nos agrega las propiedades de Css grid */
         display: grid;
-        /* Se define dos columnas de 300 pixeles*/
-        /* grid-template-columns: 300px 300px; */
-        /* grid-template-columns: 33.3% 33.3% 33.3%; */
-        /* grid-template-columns: 1fr 1fr 1fr; */
         grid-template-columns: repeat(3, 1fr);
     }
 }
