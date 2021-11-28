@@ -3,24 +3,14 @@ from flask import Flask, render_template, jsonify, request
 app = Flask(__name__)
 cmd_queue = []
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
+
 @app.route('/registrar')
 def registrar():    
     return render_template('Registrar.html')
->>>>>>> 80095e7ac64fc010b833080d70b6bbace1aedbed
-
-@app.route('/')  
-def login():
-    return render_template('Login.html')
-<<<<<<< HEAD
 @app.route('/login')  
 def login1():
     return render_template('Login.html')
-@app.route('/registrar')
-def registrar():    
-    return render_template('Registrar.html')
+    
 @app.route('/miperfil')  
 def miperfil():
     return render_template('MiPerfil.html')
@@ -34,15 +24,9 @@ def estadistica():
     return render_template('Estadistica.html')    
 
 @app.route('/index')  
-=======
-=======
 @app.route('/')
->>>>>>> 80095e7ac64fc010b833080d70b6bbace1aedbed
 def index():
-    return render_template('index.html')    
-@app.route('/contacto')  
-def contacto():
-    return render_template('Contacto.html')  
+    return render_template('index.html')
 
 @app.route('/api/hello')
 def hello():
@@ -68,11 +52,6 @@ def get_command():
         cmd = "None"
     return jsonify({"cmd":cmd})
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 14b3dc6bf54da3e4f8dbcc2cc7a1fae4a0e612a7
->>>>>>> 80095e7ac64fc010b833080d70b6bbace1aedbed
 if __name__ == "__main__":
     app.run(debug=True)
-
