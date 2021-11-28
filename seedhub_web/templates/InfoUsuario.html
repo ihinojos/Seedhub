@@ -3,7 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SeedHub | Mis Plantas</title>
+  <title>Mis Plantas | SeedHub</title>
+  <link rel = "icon" href = 
+  "../static/img/logoHoja.png" 
+          type = "image/x-icon">
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <!-- Font Awesome -->
@@ -136,7 +139,7 @@
         </li> -->
         <li class="nav-item">
           <!-- <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button"> -->
-          <a class="nav-link" href="#" role="button">
+          <a class="nav-link" href="/login" role="button">
             <i class="fas fa-sign-out-alt"></i>
           </a>
         </li>
@@ -147,8 +150,8 @@
     <!-- Main Sidebar Container -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
       <!-- Brand Logo -->
-      <a href="index.html" class="brand-link">
-        <img src="../static/img/AdminLTELogo.png" alt="SeedHub" class="brand-image img-circle elevation-3" style="opacity: .8">
+      <a href="/index" class="brand-link">
+        <img src="../static/img/logoHoja.png" alt="SeedHub" class="brand-image img-circle " style="opacity: .8" >
         <span class="brand-text font-weight-light">SeedHub</span>
       </a>
   
@@ -180,7 +183,7 @@
         <nav class="mt-2">
           <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
             <li class="nav-item">
-              <a href="InfoUsuario.html" class="nav-link"> <!-- Cambiar href por dirección del index, también los iconos correspondientes -->
+              <a href="/misplantas" class="nav-link"> <!-- Cambiar href por dirección del index, también los iconos correspondientes -->
                 <i class="nav-icon fas fa-seedling text-green"></i>
                 <p style="color: green;">
                   MIS PLANTAS
@@ -188,7 +191,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a href="Estadistica.html" class="nav-link"> <!-- Cambiar href por dirección del index, también los iconos correspondientes -->
+              <a href="/estadistica" class="nav-link"> <!-- Cambiar href por dirección del index, también los iconos correspondientes -->
                 <i class="nav-icon fas fa-chart-line text-green"></i>
                 <p style="color: green;">
                   ESTADÍSTICA
@@ -196,7 +199,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a href="MiPerfil.html" class="nav-link"> <!-- Cambiar href por dirección del index, también los iconos correspondientes -->
+              <a href="/miperfil" class="nav-link"> <!-- Cambiar href por dirección del index, también los iconos correspondientes -->
                 <i class="nav-icon fas fa-user text-green"></i>
                 <p style="color: green;">
                   MI PERFIL
@@ -204,7 +207,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a href="Contacto.html" class="nav-link"> <!-- Cambiar href por dirección del index, también los iconos correspondientes -->
+              <a href="/contacto" class="nav-link"> <!-- Cambiar href por dirección del index, también los iconos correspondientes -->
                 <i class="nav-icon fas fa-comments text-green"></i>
                 <p style="color: green;">
                   CONTACTO
@@ -228,14 +231,14 @@
           </div>
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="index.html" style="color: green;">Inicio</a></li>
+              <li class="breadcrumb-item"><a href="/index" style="color: green;">Inicio</a></li>
               <li class="breadcrumb-item active">Mis Plantas</li>
             </ol>
           </div>
         </div>
         <div class="row mb-2">
           <div class="col-sm-12">
-            <button type="button" class="btn float-sm-right" onclick="ChangeTitleModal('add')" data-toggle="modal" data-target="#modal-lg">
+            <button type="button" class="btn float-sm-right" onclick="ChangeTitleModal('add')" data-toggle="modal" data-target="#Agregar">
               <i class="fas fa-plus-circle text-green fa-2x"></i>
             </button>
           </div>
@@ -330,9 +333,9 @@
 
   <footer class="main-footer">
     <div class="float-right d-none d-sm-block">
-      <b>Version</b> 3.1.0
+      <b>Versión</b> 1.0
     </div>
-    <strong>Copyright &copy; 2014-2021 <a>SeedHub</a>.</strong> All rights reserved.
+    <strong>Copyright &copy; 2021 <a>SeedHub</a>.</strong> All rights reserved.
   </footer>
 
   <!-- Control Sidebar -->
@@ -370,6 +373,10 @@
           <label for="InputHumedad">HUMEDAD</label>
           <input type="text" class="form-control" id="humedadPlanta" placeholder="Humedad" style="background-color: #abb1b1;">
         </div>
+        <div class="form-group">
+          <label for="InputDescripcion">Descripción</label>
+          <textarea name="Descripcion"class="form-control" id="descripcionPlanta" cols="30" rows="10" placeholder="Descripcion" style="background-color: #abb1b1;"></textarea>
+        </div>
       </div>
       <div class="modal-footer justify-content-between" style="justify-content: center!important;">
         <button id="buttonModal" type="button" class="btn btn-primary" style="background-color: #739d09;">Guardar Cambios</button>
@@ -379,7 +386,45 @@
   </div>
   <!-- /.modal-dialog -->
 </div>
-
+<div class="modal fade" id="Agregar">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header" style="background-color: #739d09;">
+        <h4 id="titleModal" class="modal-title" style="color: white;">Agregar Planta</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="InputNombre1">NOMBRE</label>
+          <input type="text" class="form-control" id="nombrePlanta1" placeholder="Nombre" style="background-color: #abb1b1;">
+        </div>
+        <div class="form-group">
+          <label for="InputTipo">TIPO</label>
+          <input type="text" class="form-control" id="tipoPlanta" placeholder="Tipo" style="background-color: #abb1b1;">
+        </div>
+        <div class="form-group">
+          <label for="InputTemperatura">TEMPERATURA</label>
+          <input type="text" class="form-control" id="temperaturaPlanta" placeholder="Temperatura" style="background-color: #abb1b1;">
+        </div>
+        <div class="form-group">
+          <label for="InputHumedad">HUMEDAD</label>
+          <input type="text" class="form-control" id="humedadPlanta" placeholder="Humedad" style="background-color: #abb1b1;">
+        </div>
+        <div class="form-group">
+          <label for="InputDescripcion">Descripción</label>
+          <textarea name="Descripcion"class="form-control" id="descripcionPlanta" cols="30" rows="10" placeholder="Descripcion" style="background-color: #abb1b1;"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-between" style="justify-content: center!important;">
+        <button id="buttonModal" type="button" class="btn btn-primary" style="background-color: #739d09;">Guardar Cambios</button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
 <!-- jQuery -->
 <script src="../static/plugins/jquery/jquery.min.js"></script>
 <!-- Bootstrap 4 -->
