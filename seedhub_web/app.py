@@ -10,7 +10,7 @@ def registrar():
 @app.route('/login')  
 def login1():
     return render_template('Login.html')
-    
+
 @app.route('/miperfil')  
 def miperfil():
     return render_template('MiPerfil.html')
@@ -23,7 +23,6 @@ def misplantas():
 def estadistica():
     return render_template('Estadistica.html')    
 
-@app.route('/index')  
 @app.route('/')
 def index():
     return render_template('index.html')
