@@ -160,6 +160,8 @@ def miperfil():
 @app.route('/edit_plant', methods=['POST'])
 def edit_plant():
     if request.method == "POST":
+        if "log_out" in request.form:
+            return log_out()
         plant_id = request.form["plant_id"]
         plant = get_plant_by_id(plant_id)
         plant["conf"] = get_plant_config(plant_id)
