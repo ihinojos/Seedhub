@@ -15,7 +15,9 @@
   <link rel="stylesheet" href="../static/css/adminlte.min.css">
   {% block style %}{% endblock %}
 </head>
-{% block body %}
+<body class="{{body_class}}">
+{% block body %}{% endblock %}
+{% block scripts %}
 <!-- jQuery -->
 <script src="../static/plugins/jquery/jquery.min.js"></script>
 <!-- Bootstrap 4 -->
@@ -23,4 +25,5 @@
 <!-- AdminLTE App -->
 <script src="../static/js/adminlte.min.js"></script>
 {% endblock %}
+</body>
 </html>

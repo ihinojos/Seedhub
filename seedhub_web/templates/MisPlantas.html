@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block title %}Mis Plantas | Seedhub{% endblock %}
+{% set body_class = "hold-transition sidebar-mini" %}
+{% block body %}
+  <!-- Site wrapper -->
+  <div class="wrapper">
+  {% include "navbars.html" %}
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Mis Plantas</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="/index" style="color: green;">Inicio</a></li>
+              <li class="breadcrumb-item active">Mis Plantas</li>
+            </ol>
+          </div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-sm-11">
+            {% with message = get_flashed_messages( with_categories=true ) %}
+              {% if message %}
+                {% for category, data in message %}
+                <div class="alert {{category}} alert-dismissible fade show" role="alert">
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close" class="close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                  {{data}}
+                </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+          </div>
+          <div class="col-sm-1">
+            <button type="button" class="btn float-sm-right" onclick="ChangeTitleModal('add')" data-toggle="modal" data-target="#Agregar">
+              <i class="fas fa-plus-circle text-green fa-2x"></i>
+            </button>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+    <!-- Main content -->
+    <section class="content">
+      <!-- Default box -->
+      <div class="card card-solid">
+        <div class="card-body pb-0">
+          <div class="row">
+            {% for plant_itm in plants %}
+            <div class="col-12 col-sm-6 col-md-4 d-flex align-items-stretch flex-column">
+              <div class="card bg-light d-flex flex-fill">
+                <div class="card-header text-muted border-bottom-0">
+                  {{ plant_itm["type"] }}
+                </div>
+                <div class="card-body pt-0">
+                  <div class="row">
+                    <div class="col-7">
+                      <h2 class="lead text-green"><b> {{ plant_itm["name"] }} </b></h2>
+                      <p class="text-muted text-sm"><b>Descripción: </b> {{ plant_itm["desc"] }} </p>
+                    </div>
+                    <div class="col-5 text-center">
+                      <img src="../static/img/FlorAmarilla.png" alt="FlorAmarilla" class="img-circle img-fluid">
+                    </div>
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <div class="text-right">
+                    <a  class="btn btn-sm" onclick="ChangeTitleModal('edit')" data-toggle="modal" data-target="#modal-lg">
+                      <i class="fas fa-cog text-green"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <!-- /.card -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+  <footer class="main-footer">
+    <div class="float-right d-none d-sm-block">
+      <b>Versión</b> 1.0
+    </div>
+    <strong>Copyright &copy; 2021 <a>SeedHub</a>.</strong> All rights reserved.
+  </footer>
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- /.modal-lg --> 
+<div class="modal fade" id="modal-lg">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header" style="background-color: #739d09;">
+        <h4 id="titleModal" class="modal-title" style="color: white;">Editar Planta</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="InputNombre1">NOMBRE</label>
+          <input name="plant_name" type="text" class="form-control" id="nombrePlanta1" placeholder="Nombre" style="background-color: #abb1b1;">
+        </div>
+        <div class="form-group">
+          <label for="InputTipo">TIPO</label>
+          <input name="plant_type" type="text" class="form-control" id="tipoPlanta" placeholder="Tipo" style="background-color: #abb1b1;">
+        </div>
+        <div class="form-group">
+          <label for="InputDescripcion">Descripción</label>
+          <textarea name="plant_desc"class="form-control" id="descripcionPlanta" cols="30" rows="10" placeholder="Descripcion" style="background-color: #abb1b1;"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-between" style="justify-content: center!important;">
+        <button id="buttonModal" type="button" class="btn btn-primary" style="background-color: #739d09;">Guardar Cambios</button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+<div class="modal fade" id="Agregar">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header" style="background-color: #739d09;">
+        <h4 id="titleModal" class="modal-title" style="color: white;">Agregar Planta</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="post" action="#">
+        <div class="modal-body">
+            <div class="form-group">
+              <label for="InputNombre1">NOMBRE</label>
+              <input type="text" class="form-control" name="plant_name" id="nombrePlanta1" placeholder="Nombre" style="background-color: #abb1b1;">
+            </div>
+            <div class="form-group">
+              <label for="InputTipo">TIPO</label>
+              <input type="text" class="form-control" name="plant_type" id="tipoPlanta" placeholder="Tipo" style="background-color: #abb1b1;">
+            </div>
+            <div class="form-group">
+              <label for="InputDescripcion">Descripción</label>
+              <textarea name="plant_desc" class="form-control" id="descripcionPlanta" cols="30" rows="10" placeholder="Descripcion" style="background-color: #abb1b1;"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer justify-content-between" style="justify-content: center!important;">
+          <button id="buttonModal" type="submit" name="add_plant" class="btn btn-primary" style="background-color: #739d09;">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+{% endblock %}
+{% block scripts %}
+{{super()}}
+<!-- AdminLTE for demo purposes -->
+<script src="../static/js/demo.js"></script>
+<script>
+function ChangeTitleModal(type){
+  console.log(type)
+  if(type === 'add'){
+      document.getElementById('titleModal').textContent = "AGREGAR PLANTA"
+      document.getElementById('buttonModal').textContent = "AÑADIR"
+  } else {
+      document.getElementById('titleModal').textContent = "EDITAR PLANTA"
+      document.getElementById('buttonModal').textContent = "EDITAR"
+  }
+}
+</script>
+{% endblock %}

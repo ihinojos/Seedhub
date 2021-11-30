@@ -9,8 +9,8 @@
   }
 </style>
 {% endblock %}
+{% set body_class="hold-transition register-page" %}
 {% block body %}
-<body class="hold-transition register-page">
 <div class="register-box">
   <div class="card card-outline card-primary" style="border-top: 3px solid #739d09!important;">
     <div class="card-header text-center">
@@ -82,6 +82,9 @@
     <!-- /.form-box -->
   </div><!-- /.card -->
 </div>
+{% endblock %}
+{% block scripts %}
+{{super()}}
 <script>
 var checker = document.getElementById('agreeTerms');
 var sendbtn = document.getElementById('submitBtn');
@@ -89,5 +92,4 @@ checker.onchange = function() {
   sendbtn.disabled = !this.checked;
 };
 </script>
-</body>
 {% endblock %}

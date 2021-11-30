@@ -5,6 +5,49 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecretkey'
 cmd_queue = []
 
+def log_out():
+    session.clear()
+    return redirect(url_for('index'))
+
+def add_plant(plant_src = None):
+    if plant_src == None:
+        return
+    db_con = sqlite3.connect('seedhub_db')
+    db_cur = db_con.cursor()
+    plant_src["id"] = random.getrandbits(32)
+    plant_src["u_id"] = session["u_id"]
+    try:
+        db_cur.execute("INSERT INTO plants values (:id, :name, :type, :desc, :u_id)", plant_src)
+        db_con.commit()
+        return True
+    except:
+        return False
+    finally:
+        db_con.close()
+
+def get_plants():
+    db_con = sqlite3.connect('seedhub_db')
+    db_cur = db_con.cursor()
+    try:
+        db_cur.execute("SELECT * FROM plants WHERE u_id=:id", {"id":session["u_id"]})
+        records = db_cur.fetchall()
+        if len(records) > 0:
+            plants = []
+            for record in records:
+                plant = {}
+                plant["id"] = record[0]
+                plant["name"] = record[1]
+                plant["type"] = record[2]
+                plant["desc"] = record[3]
+                plants.append(plant)
+            return plants
+        else:
+            return []
+    except:
+        pass
+    finally:
+        db_con.close()
+
 @app.route('/registrar', methods=['POST', 'GET'])
 def registrar():
     if request.method == "POST":
@@ -65,27 +108,48 @@ def login():
 
 @app.route('/miperfil')  
 def miperfil():
-    return render_template('MiPerfil.html')
+    if "u_id" in session:
+        return render_template('MiPerfil.html')
+    return redirect(url_for('index'))
 
-@app.route('/misplantas')  
+@app.route('/misplantas', methods=['POST', 'GET'])  
 def misplantas():
-    return render_template('InfoUsuario.html')
+    if "u_id" in session:
+        if request.method == "POST":
+            if "log_out" in request.form:
+                return log_out()
+            elif "add_plant" in request.form:
+                print("adding plant")
+                plant = {}
+                plant["name"] = request.form["plant_name"]
+                plant["type"] = request.form["plant_type"]
+                plant["desc"] = request.form["plant_desc"]
+                if add_plant(plant):
+                    flash("Sucessfully added plant {name}".format(name=plant["name"]), category="alert-success")
+                else:
+                    flash("Error adding plant {name}".format(name=plant["name"]), category="alert-warning")
+        plants = get_plants()
+        return render_template('MisPlantas.html', plants=plants)
+    return redirect(url_for('login'))
 
 @app.route('/estadistica')  
 def estadistica():
-    return render_template('Estadistica.html')    
+    if "u_id" in session:
+        return render_template('Estadistica.html')
+    return redirect(url_for('index'))
+
+@app.route('/contacto')
+def contacto():
+    if "u_id" in session:
+        return render_template('Contacto.html')
+    return redirect(url_for('index'))
 
 @app.route('/')
 def index():
-    session_set = session.get("u_id")
-    if session_set != None:
+    if "u_id" in session:
         return redirect(url_for('misplantas'))
     else:
         return redirect(url_for('login'))
-
-@app.route('/api/hello')
-def hello():
-    return jsonify({"message":"Hello, world"})
 
 @app.route('/api/save_info', methods=['POST'])
 def save_info():
