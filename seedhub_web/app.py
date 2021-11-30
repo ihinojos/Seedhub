@@ -77,7 +77,7 @@ def estadistica():
 
 @app.route('/')
 def index():
-    if session["u_id"]:
+    if session.get("u_id"):
         return render_template('index.html')
     else:
         return redirect(url_for('login'))
