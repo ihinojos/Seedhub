@@ -79,7 +79,7 @@ def estadistica():
 def index():
     session_set = session.get("u_id")
     if session_set != None:
-        return render_template('index.html')
+        return redirect(url_for('misplantas'))
     else:
         return redirect(url_for('login'))
 
