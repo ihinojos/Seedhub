@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Editar {{ plant["name"] }} | Seedhub{% endblock %}
+{% set pg_title = "Editar "+plant["name"] %}
+{% set body_class = "hold-transition sidebar-mini" %}
+{% block body %}
+<!-- Site wrapper -->
+<div class="wrapper">
+    {% include "navbars.html" %}
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <div class="container-fluid">
+                {% include "content_header.html" %}
+            </div><!-- /.container-fluid -->
+        </section>
+        <!-- Main content -->
+        <section class="content">
+            <form method="post" action="#">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="InputNombre1">NOMBRE</label>
+                                <input type="text" class="form-control" name="plant_name" id="nombrePlanta1" placeholder="Nombre" style="background-color: #abb1b1;">
+                            </div>
+                            <div class="form-group">
+                                <label for="InputTipo">TIPO</label>
+                                <input type="text" class="form-control" name="plant_type" id="tipoPlanta" placeholder="Tipo" style="background-color: #abb1b1;">
+                            </div>
+                            <div class="form-group">
+                                <label for="InputDescripcion">Descripción</label>
+                                <textarea name="plant_desc" class="form-control" id="descripcionPlanta" cols="30" rows="10" placeholder="Descripcion" style="background-color: #abb1b1;"></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label for="InputNombre1">Humedad de Suelo</label>
+                                        <input type="text" class="form-control" name="plant_name" id="nombrePlanta1" placeholder="Nombre" style="background-color: #abb1b1;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="InputTipo">Intensidad de Leds</label>
+                                        <input type="text" class="form-control" name="plant_type" id="tipoPlanta" placeholder="Tipo" style="background-color: #abb1b1;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="InputTipo">Horas de Leds</label>
+                                        <input type="text" class="form-control" name="plant_type" id="tipoPlanta" placeholder="Tipo" style="background-color: #abb1b1;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="InputTipo">Osilación de Leds</label>
+                                        <input type="text" class="form-control" name="plant_type" id="tipoPlanta" placeholder="Tipo" style="background-color: #abb1b1;">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label for="InputTipo">Cyclo de Ventilación</label>
+                                        <input type="text" class="form-control" name="plant_type" id="tipoPlanta" placeholder="Tipo" style="background-color: #abb1b1;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="InputTipo">tiempo de Ventilación</label>
+                                        <input type="text" class="form-control" name="plant_type" id="tipoPlanta" placeholder="Tipo" style="background-color: #abb1b1;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="InputTipo">tiempo de regado</label>
+                                        <input type="text" class="form-control" name="plant_type" id="tipoPlanta" placeholder="Tipo" style="background-color: #abb1b1;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="InputTipo">timepo de chequeo</label>
+                                        <input type="text" class="form-control" name="plant_type" id="tipoPlanta" placeholder="Tipo" style="background-color: #abb1b1;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between" style="justify-content: center!important;">
+                  <button id="buttonModal" type="submit" name="add_plant" class="btn btn-primary" style="background-color: #739d09;">Guardar Cambios</button>
+                </div>
+              </form>
+        </section>
+        <!-- /.content -->
+    </div>
+    {% include "content_footer.html" %}
+</div>
+{% endblock %}

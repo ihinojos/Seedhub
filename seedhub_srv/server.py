@@ -57,7 +57,6 @@ def sendStatus():
                 data[log[0]] = log[1].strip('\r\n')
             response = requests.post(url, json=data)
             #print(response.content)
-
     except serialutil.SerialException:
         return
     

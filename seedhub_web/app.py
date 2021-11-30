@@ -41,8 +41,53 @@ def get_plants():
                 plant["desc"] = record[3]
                 plants.append(plant)
             return plants
-        else:
-            return []
+        return []
+    except:
+        pass
+    finally:
+        db_con.close()
+
+def get_plant_by_id(p_id):
+    db_con = sqlite3.connect('seedhub_db')
+    db_cur = db_con.cursor()
+    try:
+        db_cur.execute("SELECT * FROM plants WHERE id=:p_id", {"p_id":p_id})
+        records = db_cur.fetchall()
+        if len(records) > 0:
+            plant = {}
+            for record in records:
+                plant["id"] = record[0]
+                plant["name"] = record[1]
+                plant["type"] = record[2]
+                plant["desc"] = record[3]
+            return plant
+        return {}
+    except:
+        pass
+    finally:
+        db_con.close()
+
+def get_plant_config(p_id):
+    db_con = sqlite3.connect('seedhub_db')
+    db_cur = db_con.cursor()
+    try:
+        db_cur.execute("SELECT * FROM plant_conf WHERE p_id=:id", {"id":p_id})
+        records = db_cur.fetchall()
+        if len(records) > 0:
+            conf = {}
+            for record in records:
+                conf["id"] = record[0]
+                conf["soil_moist"] = record[1]
+                conf["led_bright"] = record[2]
+                conf["led_houts"] = record[3]
+                conf["led_dimming"] = record[4]
+                conf["fans_cycle"] = record[5]
+                conf["fans_runtime"] = records[6]
+                conf["pump_runtime"] = records[7]
+                conf["checkup_time"] = records[8]
+                conf["p_id"] = records[9]
+            return conf
+        return {}
     except:
         pass
     finally:
@@ -112,6 +157,15 @@ def miperfil():
         return render_template('MiPerfil.html')
     return redirect(url_for('index'))
 
+@app.route('/edit_plant', methods=['POST'])
+def edit_plant():
+    if request.method == "POST":
+        plant_id = request.form["plant_id"]
+        plant = get_plant_by_id(plant_id)
+        plant["conf"] = get_plant_config(plant_id)
+        return render_template('edit_plant.html', plant=plant);
+    return redirect(url_for('index'))
+
 @app.route('/misplantas', methods=['POST', 'GET'])  
 def misplantas():
     if "u_id" in session:
@@ -119,7 +173,6 @@ def misplantas():
             if "log_out" in request.form:
                 return log_out()
             elif "add_plant" in request.form:
-                print("adding plant")
                 plant = {}
                 plant["name"] = request.form["plant_name"]
                 plant["type"] = request.form["plant_type"]
@@ -129,6 +182,8 @@ def misplantas():
                 else:
                     flash("Error adding plant {name}".format(name=plant["name"]), category="alert-warning")
         plants = get_plants()
+        for plant in plants:
+            plant["conf"] = get_plant_config(plant)
         return render_template('MisPlantas.html', plants=plants)
     return redirect(url_for('login'))
 
