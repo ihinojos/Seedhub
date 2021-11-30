@@ -1,54 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-<<<<<<< HEAD
-  <title> Login | SeedHub </title>
-=======
-<<<<<<< HEAD
-  <title>SeedHub | Login </title>
->>>>>>> 80095e7ac64fc010b833080d70b6bbace1aedbed
-  <link rel = "icon" href = 
-"../static/img/logoHoja.png" 
-        type = "image/x-icon">
- 
-<<<<<<< HEAD
-=======
-=======
-  <title>AdminLTE 3 | Log in (v2)</title>
-
->>>>>>> 14b3dc6bf54da3e4f8dbcc2cc7a1fae4a0e612a7
->>>>>>> 80095e7ac64fc010b833080d70b6bbace1aedbed
-  <!-- Google Font: Source Sans Pro -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="../static/plugins/fontawesome-free/css/all.min.css">
-  <!-- icheck bootstrap -->
-  <link rel="stylesheet" href="../static/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
-  <!-- Theme style -->
-  <link rel="stylesheet" href="../static/css/adminlte.min.css">
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 80095e7ac64fc010b833080d70b6bbace1aedbed
-  <style>
-    body{
-      background-image: url("../static/img/leaves.jpg") ;
-      background-repeat: no-repeat;
-      background-size: 100% 100%;
-
-    }
-  </style>
-</head>
-<body class="hold-transition login-page" >
-<<<<<<< HEAD
-=======
-=======
-</head>
+{% extends "base.html" %}
+{% block title %}Log in | Seedhub{% endblock %}
+{% block style %}
+<style>
+  body{
+    background-image: url("../static/img/leaves.jpg") ;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+  }
+</style>
+{% endblock %}
+{% block body %}
 <body class="hold-transition login-page">
->>>>>>> 14b3dc6bf54da3e4f8dbcc2cc7a1fae4a0e612a7
->>>>>>> 80095e7ac64fc010b833080d70b6bbace1aedbed
 <div class="login-box">
   <!-- /.login-logo -->
   <div class="card card-outline card-primary" style="border-top: 3px solid #739d09!important;">
@@ -57,27 +19,25 @@
       <img src="../static/img/logo.png" alt="NotUser" width="35%" height="35%" style="padding-bottom: 5px;">
     </div>
     <div class="card-body">
-      <!-- <p class="login-box-msg">Sign in to start your session</p> -->
-
-<<<<<<< HEAD
-      <form action="/miperfil" >
-=======
-<<<<<<< HEAD
-      <form action="/miperfil" method="post">
-=======
-      <form action="index3.html" method="post">
->>>>>>> 14b3dc6bf54da3e4f8dbcc2cc7a1fae4a0e612a7
->>>>>>> 80095e7ac64fc010b833080d70b6bbace1aedbed
+      {% for message in get_flashed_messages() %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close" class="close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          {{message}}
+        </div>
+      {% endfor %}
+      <form action="#" method="post">
         <div class="input-group mb-3">
-          <input type="email" class="form-control" placeholder="Email">
+          <input name="username" type="name" class="form-control" placeholder="Username">
           <div class="input-group-append">
             <div class="input-group-text">
-              <span class="fas fa-envelope"></span>
+              <span class="fas fa-user"></span>
             </div>
           </div>
         </div>
         <div class="input-group mb-3">
-          <input type="password" class="form-control" placeholder="Password">
+          <input name="password" type="password" class="form-control" placeholder="Password">
           <div class="input-group-append">
             <div class="input-group-text">
               <span class="fas fa-lock"></span>
@@ -86,42 +46,21 @@
         </div>
         <div class="row">
           <div class="col-12" style="justify-content: center!important;">
-<<<<<<< HEAD
             <button type="submit" class="btn btn-block" style="background-color: #739d09; color: white;">Ingresar</button>
-=======
-<<<<<<< HEAD
-            <button type="submit"  class="btn btn-block" style="background-color: #739d09; color: white;">Ingresar</button>
-=======
-            <button type="submit" class="btn btn-block" style="background-color: #739d09; color: white;">Ingresar</button>
->>>>>>> 14b3dc6bf54da3e4f8dbcc2cc7a1fae4a0e612a7
->>>>>>> 80095e7ac64fc010b833080d70b6bbace1aedbed
           </div>
           <!-- /.col -->
         </div>
       </form>
       <p class="mb-2" style="padding-top: 8%; align-content: center;">
-<<<<<<< HEAD
         <a href="/registrar" class="text-center" style="justify-content: center!important;">Registrarse</a>
-=======
-<<<<<<< HEAD
-        <a href="/registrar" class="text-center" style="justify-content: center!important;">Registrarse</a>
-=======
-        <a href="../templates/Registrar.html" class="text-center" style="justify-content: center!important;">Registrarse</a>
->>>>>>> 14b3dc6bf54da3e4f8dbcc2cc7a1fae4a0e612a7
->>>>>>> 80095e7ac64fc010b833080d70b6bbace1aedbed
       </p>
     </div>
     <!-- /.card-body -->
   </div>
   <!-- /.card -->
 </div>
-<!-- /.login-box -->
-
-<!-- jQuery -->
-<script src="../static/plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="../static/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE App -->
-<script src="../static/js/adminlte.min.js"></script>
+<script>
+$('.alert').alert()
+</script>
 </body>
-</html>
+{% endblock %}
