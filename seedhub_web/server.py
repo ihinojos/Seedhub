@@ -1,3 +1,4 @@
+from threading import Thread
 import time
 import serial
 import signal
@@ -7,8 +8,40 @@ import subprocess
 from serial import serialutil
 from RepeatedTimer import RepeatedTimer
 
+import atexit
+
+class SerialPort(Thread):
+    def __init__(self, port=None, baud=9600, timeout=1):
+        super().__init__()
+        self.ser = serial.Serial()
+        self.ser.port = port
+        self.ser.baudrate = baud
+        self.ser.timeout = timeout
+        self.running = False
+        atexit.register(self.ser.close) # Make sure the serial port closes when you quit the program.
+
+    def set_port(self, port_num):
+        self.ser.port = "COM"+str(port_num)
+
+    def start(self, *args, **kwargs):
+        self.running = True
+        self.ser.open()
+        super().start()
+        self.ser.write("c\n".encode("ascii"))
+
+    def run(self):
+        while self.running:
+            try:
+                incomingByte = self.ser.readline()
+                decodedByte = incomingByte.decode("ascii")
+                print(decodedByte)
+            except:
+                pass
+            # time.sleep(0.01) # You may want to sleep or use readline
+
 plants = {}
 arduino = None
+plant_id = ""
 
 def timeout(signum, frame):
     print("Command timed out")
@@ -61,7 +94,8 @@ def sendStatus():
     except serialutil.SerialException:
         return
     
-if __name__ == '__main__':
+def start(id):
+    plant_id = id
     arduino = None
     signal.signal(signal.SIGALRM, timeout)
     signal.alarm(60)
@@ -82,3 +116,6 @@ if __name__ == '__main__':
         stats.stop()
         cmd_d.stop()
     arduino.close()
+
+if __name__ == '__main__':
+    start("")

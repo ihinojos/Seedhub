@@ -1,8 +1,17 @@
 import server
 import sqlite3, random
 from sqlite3.dbapi2 import connect
+from flask_socketio import SocketIO
+from flask_serial import Serial
 from flask import Flask, render_template, jsonify, request, url_for, flash, redirect, session
+
 app = Flask(__name__)
+app.config['SERIAL_TIMEOUT'] = 0.3
+app.config['SERIAL_PORT'] = 'ttyUSB0'
+app.config['SERIAL_BAUDRATE'] = 9600
+app.config['SERIAL_BYTESIZE'] = 8
+app.config['SERIAL_PARITY'] = 'N'
+app.config['SERIAL_STOPBITS'] = 1
 app.config['SECRET_KEY'] = 'mysecretkey'
 cmd_queue = []
 
@@ -113,9 +122,11 @@ def get_plant_config(p_id):
         db_con.close()
 
 @app.route('/connect_arduino')
-def connect_to_arduino(methods=['GET']):
-    return render_template('Estadistica.html')
-
+def connect_to_arduino(methods=['POST','GET']):
+    if request.method == "GET":
+        plant_id = str(request.args.get('link_plant'))
+        print(plant_id)
+        server.start(plant_id)
 
 @app.route('/log_out', methods=['POST'])
 def log_out():

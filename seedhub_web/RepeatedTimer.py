@@ -2,11 +2,10 @@ import threading
 import time
 
 class RepeatedTimer(object):
-  def __init__(self, interval, function, plant_id, *args, **kwargs):
+  def __init__(self, interval, function, *args, **kwargs):
     self._timer = None
     self.interval = interval
     self.function = function
-    self.plant_id = plant_id
     self.args = args
     self.kwargs = kwargs
     self.is_running = False
