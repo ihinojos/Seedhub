@@ -14,7 +14,7 @@ def timeout(signum, frame):
     print("Command timed out")
     raise Exception("timedOutException")
 
-def connectToArduino(plant_id):
+def connectToArduino():
     tty_found = None
     cmd = "find /dev/serial/by-path/. -maxdepth 1 -type l -ls | grep ttyUSB*"
     while True:
@@ -23,12 +23,12 @@ def connectToArduino(plant_id):
         if tty_found.returncode == 0:
             tty = "".join(["/dev/", tty_found.stdout.decode().split('/')[-1].strip('\n')])
             print("Found serial device  at",tty)
-            plants[plant_id] = serial.Serial(port=tty, baudrate=9600, timeout=2)
+            arduino = serial.Serial(port=tty, baudrate=9600, timeout=2)
             time.sleep(1)
-            plants[plant_id].flushInput()
-            plants[plant_id].flushOutput()
-            plants[plant_id].read_all()
-            return plants[plant_id]
+            arduino.flushInput()
+            arduino.flushOutput()
+            arduino.read_all()
+            return arduino
             
 def writeToArduino(command):
     arduino.write(bytes(command, 'ascii'))
@@ -60,31 +60,25 @@ def sendStatus():
             #print(response.content)
     except serialutil.SerialException:
         return
-
-def start(plant_id):
-    plants[plant_id] = plant_id
+    
+if __name__ == '__main__':
     arduino = None
     signal.signal(signal.SIGALRM, timeout)
     signal.alarm(60)
     try:
-        plants[plant_id] = connectToArduino(plant_id)
+        arduino = connectToArduino()
         signal.alarm(0)
     except Exception as exc:
-        plants[plant_id] = None
+        arduino = None
         print(exc)
-    if plants[plant_id]:
+    if arduino:
         print("Arduino found, starting daemon")
-        stats = None
-        cmd_d = None
-        try:
-            stats = RepeatedTimer(3, sendStatus, plant_id)
-            cmd_d = RepeatedTimer(5, getCommand, plant_id)
-        except:
-            stats.stop()
-            cmd_d.stop()
-
-        finally:
-            arduino.close()
-    
-if __name__ == '__main__':
-    start()
+        stats = RepeatedTimer(3, sendStatus)
+        cmd_d = RepeatedTimer(5, getCommand)
+        while True:
+            data = input("Type 0 to terminate:")
+            if data == '0' : break
+            #writeToArduino(arduino, data)
+        stats.stop()
+        cmd_d.stop()
+    arduino.close()

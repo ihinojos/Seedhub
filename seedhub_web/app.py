@@ -1,23 +1,22 @@
-import re
+import server
 import sqlite3, random
+from sqlite3.dbapi2 import connect
 from flask import Flask, render_template, jsonify, request, url_for, flash, redirect, session
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecretkey'
 cmd_queue = []
 
-def log_out():
-    session.clear()
-    return redirect(url_for('index'))
-
-def add_plant(plant_src = None):
+def add_plant(plant_src):
     if plant_src == None:
         return
     db_con = sqlite3.connect('seedhub_db')
     db_cur = db_con.cursor()
-    plant_src["id"] = random.getrandbits(32)
+    plant_src["p_id"] = random.getrandbits(32)
     plant_src["u_id"] = session["u_id"]
+    plant_src['c_id'] = random.getrandbits(32)
     try:
-        db_cur.execute("INSERT INTO plants values (:id, :name, :type, :desc, :u_id)", plant_src)
+        db_cur.execute("INSERT INTO plants values (:p_id, :name, :type, :desc, :u_id)", plant_src)
+        db_cur.execute("INSERT INTO plant_conf(id, p_id) values(:c_id, :p_id)", plant_src)
         db_con.commit()
         return True
     except:
@@ -25,6 +24,23 @@ def add_plant(plant_src = None):
     finally:
         db_con.close()
 
+def update_plant(plant_src):
+    if not plant_src:
+        return
+    db_con = sqlite3.connect('seedhub_db')
+    db_cur = db_con.cursor()
+    try:    
+        #db_cur.execute("UPDATE plants SET name=:name, type=:type, desc=:desc, u_id=:u_id WHERE id=:id", plant_src)
+        plant_conf = plant_src["conf"]
+        db_cur.execute("UPDATE plant_conf SET soil_moist=:soil_moist, led_hours=:led_hours, led_dimming=:led_dimming, fans_cycle=:fans_cycle, fans_runtime=:fans_runtime, pump_runtime=:pump_runtime, checkup_time=:checkup_time WHERE id=:id ", plant_conf)
+        db_con.commit()
+        return True
+    except sqlite3.Error as e:
+        print(e)
+        return False
+    finally:
+        db_con.close()
+    
 def get_plants():
     db_con = sqlite3.connect('seedhub_db')
     db_cur = db_con.cursor()
@@ -73,8 +89,8 @@ def get_plant_config(p_id):
     try:
         db_cur.execute("SELECT * FROM plant_conf WHERE p_id=:id", {"id":p_id})
         records = db_cur.fetchall()
+        conf = {}
         if len(records) > 0:
-            conf = {}
             for record in records:
                 conf["id"] = record[0]
                 conf["soil_moist"] = record[1]
@@ -82,16 +98,30 @@ def get_plant_config(p_id):
                 conf["led_houts"] = record[3]
                 conf["led_dimming"] = record[4]
                 conf["fans_cycle"] = record[5]
-                conf["fans_runtime"] = records[6]
-                conf["pump_runtime"] = records[7]
-                conf["checkup_time"] = records[8]
-                conf["p_id"] = records[9]
+                conf["fans_runtime"] = record[6]
+                conf["pump_runtime"] = record[7]
+                conf["checkup_time"] = record[8]
+                conf["p_id"] = record[9]
             return conf
-        return {}
-    except:
+        else:
+            conf["id"] = random.getrandbits(32)
+            return conf
+    except sqlite3.Error as e:
+        print(e)
         pass
     finally:
         db_con.close()
+
+@app.route('/connect_arduino')
+def connect_to_arduino(methods=['GET']):
+    return render_template('Estadistica.html')
+
+
+@app.route('/log_out', methods=['POST'])
+def log_out():
+    if request.method == "POST":
+        session.clear()
+    return redirect(url_for('index'))
 
 @app.route('/registrar', methods=['POST', 'GET'])
 def registrar():
@@ -139,7 +169,6 @@ def login():
                 session["u_id"] = user[0][0]
                 session["user"] = user[0][1]
                 session["email"] = user[0][2]
-                print(session)
                 return redirect(url_for('index'))
             else:
                 flash("Bad log in information")
@@ -160,11 +189,33 @@ def miperfil():
 @app.route('/edit_plant', methods=['POST'])
 def edit_plant():
     if request.method == "POST":
-        if "log_out" in request.form:
-            return log_out()
-        plant_id = request.form["plant_id"]
-        plant = get_plant_by_id(plant_id)
-        plant["conf"] = get_plant_config(plant_id)
+        plant = {}
+        if "edit_plant" in request.form:
+            plant["id"] = request.form["edit_plant"]
+            plant["name"] = request.form["plant_name"]
+            plant["type"] = request.form["plant_type"]
+            plant["desc"] = request.form["plant_desc"]
+            plant["u_id"] = session["u_id"]
+            conf = {}
+            conf["id"] = request.form["conf_id"]
+            conf["soil_moist"] = request.form["soil_moist"]
+            conf["led_bright"] = request.form["led_bright"]
+            conf["led_hours"] = request.form["led_hours"]
+            conf["led_dimming"] = 1 if request.form["led_dimming"] == "True" else 0
+            conf["fans_cycle"] = request.form["fans_cycle"]
+            conf["fans_runtime"] = request.form["fans_runtime"]
+            conf["checkup_time"] = request.form["pump_cycle_time"]
+            conf["pump_runtime"] = request.form["pump_time"]
+            conf["p_id"] = plant["id"]
+            plant["conf"] = conf
+            if update_plant(plant):
+                flash("Sucessfully updated plant {name}".format(name=plant["name"]), category="alert-success")
+            else:
+                flash("Error updating plant {name}".format(name=plant["name"]), category="alert-warning")
+        elif "plant_id" in request.form:
+            plant["id"] = request.form["plant_id"]
+        plant = get_plant_by_id(plant["id"])
+        plant["conf"] = get_plant_config(plant["id"])
         return render_template('edit_plant.html', plant=plant);
     return redirect(url_for('index'))
 
@@ -172,9 +223,7 @@ def edit_plant():
 def misplantas():
     if "u_id" in session:
         if request.method == "POST":
-            if "log_out" in request.form:
-                return log_out()
-            elif "add_plant" in request.form:
+            if "add_plant" in request.form:
                 plant = {}
                 plant["name"] = request.form["plant_name"]
                 plant["type"] = request.form["plant_type"]
@@ -184,8 +233,6 @@ def misplantas():
                 else:
                     flash("Error adding plant {name}".format(name=plant["name"]), category="alert-warning")
         plants = get_plants()
-        for plant in plants:
-            plant["conf"] = get_plant_config(plant)
         return render_template('MisPlantas.html', plants=plants)
     return redirect(url_for('login'))
 

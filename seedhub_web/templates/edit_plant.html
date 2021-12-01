@@ -1,5 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Editar {{ plant["name"] }} | Seedhub{% endblock %}
+{% block style %}
+<style>
+.input_field {
+    text-align:right;
+}
+</style>
+{% endblock %}
 {% set pg_title = "Editar "+plant["name"] %}
 {% set body_class = "hold-transition sidebar-mini" %}
 {% block body %}
@@ -12,6 +19,22 @@
         <section class="content-header">
             <div class="container-fluid">
                 {% include "content_header.html" %}
+                <div class="row mb-2">
+                    <div class="col-sm-12">
+                      {% with message = get_flashed_messages( with_categories=true ) %}
+                        {% if message %}
+                          {% for category, data in message %}
+                          <div class="alert {{category}} alert-dismissible fade show" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close" class="close">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                            {{data}}
+                          </div>
+                          {% endfor %}
+                        {% endif %}
+                      {% endwith %}
+                    </div>
+                  </div>
             </div><!-- /.container-fluid -->
         </section>
         <!-- Main content -->
@@ -22,53 +45,100 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="InputNombre1">NOMBRE</label>
-                                <input type="text" class="form-control" name="plant_name" id="nombrePlanta1" placeholder="Nombre" style="background-color: #abb1b1;">
+                                <input type="text" class="form-control" name="plant_name" id="nombrePlanta1" placeholder="Nombre" value="{{ plant['name'] }}">
                             </div>
                             <div class="form-group">
                                 <label for="InputTipo">TIPO</label>
-                                <input type="text" class="form-control" name="plant_type" id="tipoPlanta" placeholder="Tipo" style="background-color: #abb1b1;">
+                                <input type="text" class="form-control" name="plant_type" id="tipoPlanta" placeholder="Tipo" value="{{ plant['type'] }}">
                             </div>
                             <div class="form-group">
                                 <label for="InputDescripcion">Descripción</label>
-                                <textarea name="plant_desc" class="form-control" id="descripcionPlanta" cols="30" rows="10" placeholder="Descripcion" style="background-color: #abb1b1;"></textarea>
+                                <textarea name="plant_desc" class="form-control" id="descripcionPlanta" cols="30" rows="10" placeholder="Descripcion">{{ plant['desc'] }}</textarea>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="row">
+                                {% set plant_conf = plant['conf']%}
+                                <input type="hidden" name="conf_id" value="{{ plant_conf['id'] }}">
                                 <div class="col-sm-6">
                                     <div class="form-group">
-                                        <label for="InputNombre1">Humedad de Suelo</label>
-                                        <input type="text" class="form-control" name="plant_name" id="nombrePlanta1" placeholder="Nombre" style="background-color: #abb1b1;">
+                                        <label for="soil_moist_field">Humedad de Suelo</label>
+                                        <div class="input-group">
+                                            <input type="number" min="0" max="69" class="input_field form-control" id="soil_moist_field" placeholder="0-69" value="{{ plant_conf['soil_moist'] }}" name="soil_moist">
+                                            <div class="input-group-prepend">
+                                                <div class="input-group-text">%</div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="InputTipo">Intensidad de Leds</label>
-                                        <input type="text" class="form-control" name="plant_type" id="tipoPlanta" placeholder="Tipo" style="background-color: #abb1b1;">
+                                        <label for="led_bright_field">Intensidad de Leds</label>
+                                        <div class="input-group">
+                                            <input type="number" min="0" max="255" class="input_field form-control" id="led_bright_field" placeholder="0-255" value="{{ plant_conf['led_bright'] }}" name="led_bright">
+                                            <div class="input-group-prepend">
+                                                <div class="input-group-text">#</div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="InputTipo">Horas de Leds</label>
-                                        <input type="text" class="form-control" name="plant_type" id="tipoPlanta" placeholder="Tipo" style="background-color: #abb1b1;">
+                                        <label for="led_hours_field">Ciclo de Leds</label>
+                                        <div class="input-group">
+                                            <input type="number" min="0" max="12" class="input_field form-control" id="led_hours_field" placeholder="0-12" value="{{ plant_conf['led_hours'] }}" name="led_hours">
+                                            <div class="input-group-prepend">
+                                                <div class="input-group-text">h</div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="InputTipo">Osilación de Leds</label>
-                                        <input type="text" class="form-control" name="plant_type" id="tipoPlanta" placeholder="Tipo" style="background-color: #abb1b1;">
+                                        <label for="InputTipo">Osilación de Leds</label><br>
+                                        {% if plant_conf["led_dimming"] == 1 %}
+                                            <input type="radio" id="html" name="led_dimming" checked value="True">
+                                            <label for="html">Sí</label><br>
+                                            <input type="radio" id="css" name="led_dimming" value="False">
+                                            <label for="css">No</label><br>
+                                        {% elif plant_conf["led_dimming"] == 0 %}
+                                            <input type="radio" id="html" name="led_dimming" value="True">
+                                            <label for="html">Sí</label><br>
+                                            <input type="radio" id="css" name="led_dimming" checked value="False">
+                                            <label for="css">No</label><br>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="form-group">
-                                        <label for="InputTipo">Cyclo de Ventilación</label>
-                                        <input type="text" class="form-control" name="plant_type" id="tipoPlanta" placeholder="Tipo" style="background-color: #abb1b1;">
+                                        <label for="fan_cycle_time">Ciclo de ventilación</label>
+                                        <div class="input-group">
+                                            <input type="number" min="0" max="60" class="input_field form-control" id="fan_cycle_time" placeholder="0-60" value="{{ plant_conf['fans_cycle'] }}" name="fans_cycle">
+                                            <div class="input-group-prepend">
+                                                <div class="input-group-text">m</div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="InputTipo">tiempo de Ventilación</label>
-                                        <input type="text" class="form-control" name="plant_type" id="tipoPlanta" placeholder="Tipo" style="background-color: #abb1b1;">
+                                        <label for="fan_time">Tiempo de ventilación</label>
+                                        <div class="input-group">
+                                            <input type="number" min="0" max="30" class="input_field form-control" id="fan_time" placeholder="0-30" value="{{ plant_conf['fans_runtime'] }}" name="fans_runtime">
+                                            <div class="input-group-prepend">
+                                                <div class="input-group-text">s</div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="InputTipo">tiempo de regado</label>
-                                        <input type="text" class="form-control" name="plant_type" id="tipoPlanta" placeholder="Tipo" style="background-color: #abb1b1;">
+                                        <label for="pump_cycle_time">Ciclo de regado</label>
+                                        <div class="input-group">
+                                            <input type="number" min="0" max="60" class="input_field form-control" id="pump_cycle_time" placeholder="0-60" value="{{ plant_conf['checkup_time'] }}" name="pump_cycle_time">
+                                            <div class="input-group-prepend">
+                                                <div class="input-group-text">m</div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="InputTipo">timepo de chequeo</label>
-                                        <input type="text" class="form-control" name="plant_type" id="tipoPlanta" placeholder="Tipo" style="background-color: #abb1b1;">
+                                        <label for="pump_time">Tiempo de regado</label>
+                                        <div class="input-group">
+                                            <input type="number" min="0" max="10" class="input_field form-control" id="pump_time" placeholder="0-10" value="{{ plant_conf['pump_runtime'] }}" name="pump_time">
+                                            <div class="input-group-prepend">
+                                                <div class="input-group-text">s</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -76,9 +146,12 @@
                     </div>
                 </div>
                 <div class="modal-footer justify-content-between" style="justify-content: center!important;">
-                  <button id="buttonModal" type="submit" name="add_plant" class="btn btn-primary" style="background-color: #739d09;">Guardar Cambios</button>
+                  <button id="buttonModal" type="submit" name="edit_plant" value="{{ plant['id'] }}" class="btn btn-primary" style="background-color: #739d09;">Guardar Cambios</button>
                 </div>
               </form>
+            <form method="get" action="/connect_arduino">
+                <button id="buttonModal" type="submit" name="link_plant" value="{{ plant['id'] }}" class="btn btn-primary" style="background-color: #739d09;">Conectar Arduino</button>  
+            </form>
         </section>
         <!-- /.content -->
     </div>
