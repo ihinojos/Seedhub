@@ -1,19 +1,11 @@
-import server
-import sqlite3, random
-from sqlite3.dbapi2 import connect
-from flask_socketio import SocketIO
-from flask_serial import Serial
-from flask import Flask, render_template, jsonify, request, url_for, flash, redirect, session
+from datetime import datetime
+import sqlite3, random, queue, json, time
+from flask import Flask, render_template, jsonify, request, url_for, flash, redirect, session, make_response
 
 app = Flask(__name__)
-app.config['SERIAL_TIMEOUT'] = 0.3
-app.config['SERIAL_PORT'] = 'ttyUSB0'
-app.config['SERIAL_BAUDRATE'] = 9600
-app.config['SERIAL_BYTESIZE'] = 8
-app.config['SERIAL_PARITY'] = 'N'
-app.config['SERIAL_STOPBITS'] = 1
 app.config['SECRET_KEY'] = 'mysecretkey'
-cmd_queue = []
+cmd_queue = queue.Queue()
+arduino_plant_id = None
 
 def add_plant(plant_src):
     if plant_src == None:
@@ -39,9 +31,9 @@ def update_plant(plant_src):
     db_con = sqlite3.connect('seedhub_db')
     db_cur = db_con.cursor()
     try:    
-        #db_cur.execute("UPDATE plants SET name=:name, type=:type, desc=:desc, u_id=:u_id WHERE id=:id", plant_src)
+        db_cur.execute("UPDATE plants SET name=:name, type=:type, desc=:desc, u_id=:u_id WHERE id=:id", plant_src)
         plant_conf = plant_src["conf"]
-        db_cur.execute("UPDATE plant_conf SET soil_moist=:soil_moist, led_hours=:led_hours, led_dimming=:led_dimming, fans_cycle=:fans_cycle, fans_runtime=:fans_runtime, pump_runtime=:pump_runtime, checkup_time=:checkup_time WHERE id=:id ", plant_conf)
+        db_cur.execute("UPDATE plant_conf SET soil_moist=:soil_moist, led_bright=:led_bright, led_hours=:led_hours, led_dimming=:led_dimming, fans_cycle=:fans_cycle, fans_runtime=:fans_runtime, pump_runtime=:pump_runtime, checkup_time=:checkup_time WHERE id=:id ", plant_conf)
         db_con.commit()
         return True
     except sqlite3.Error as e:
@@ -104,7 +96,7 @@ def get_plant_config(p_id):
                 conf["id"] = record[0]
                 conf["soil_moist"] = record[1]
                 conf["led_bright"] = record[2]
-                conf["led_houts"] = record[3]
+                conf["led_hours"] = record[3]
                 conf["led_dimming"] = record[4]
                 conf["fans_cycle"] = record[5]
                 conf["fans_runtime"] = record[6]
@@ -121,13 +113,54 @@ def get_plant_config(p_id):
     finally:
         db_con.close()
 
-@app.route('/connect_arduino')
-def connect_to_arduino(methods=['POST','GET']):
-    if request.method == "GET":
-        plant_id = str(request.args.get('link_plant'))
-        print(plant_id)
-        server.start(plant_id)
+@app.route('/get_plant_logs', methods=["GET", "POST"])
+def data():
+    global arduino_plant_id
+    db_con = sqlite3.connect('seedhub_db')
+    db_cur = db_con.cursor()
+    try:
+        db_cur.execute("SELECT * FROM plant_logs WHERE id=:p_id", {"p_id":arduino_plant_id})
+        records = db_cur.fetchall()
+        logs = []
+        if len(records) > 0:
+            log = {}
+            for record in records:
+                log["date"]
+                log["soil_moist"] = record[0]
+                log["air_temp"] = record[1]
+                log["air_humid"] = record[2]
+                log["air_qlty"] = record[3]
+                log["p_id"] = record[4]
+                logs.append(log)
+        return logs
+    except:
+        pass
+    finally:
+        db_con.close()
 
+
+    response = make_response(json.dumps(data))
+
+    response.content_type = 'application/json'
+
+    return response
+
+@app.route('/connect_arduino')
+def connect_to_arduino():
+    global arduino_plant_id
+    arduino_plant_id = str(request.args.get('link_plant'))
+    plant_conf = get_plant_config(arduino_plant_id)
+    cmd_queue.put("<set_soil,{val}>".format(val=plant_conf["soil_moist"]))
+    cmd_queue.put("<set_soil,{val}>".format(val=plant_conf["soil_moist"]))
+    cmd_queue.put("<set_ledb,{val}>".format(val=plant_conf["led_bright"]))
+    cmd_queue.put("<set_ledh,{val}>".format(val=plant_conf["led_hours"]))
+    cmd_queue.put("<set_fanm,{val}>".format(val=plant_conf["fans_cycle"]))
+    cmd_queue.put("<set_fans,{val}>".format(val=plant_conf["fans_runtime"]))
+    cmd_queue.put("<set_pump,{val}>".format(val=plant_conf["pump_runtime"]))
+    cmd_queue.put("<set_check,{va}>".format(va=plant_conf["checkup_time"]))
+    cmd_queue.put("<toggle_dimm,0>" if plant_conf["led_dimming"] == 1 else "None")
+    return redirect(url_for('estadistica'))
+        
 @app.route('/log_out', methods=['POST'])
 def log_out():
     if request.method == "POST":
@@ -268,23 +301,32 @@ def index():
 
 @app.route('/api/save_info', methods=['POST'])
 def save_info():
+    global arduino_plant_id
     plant_info = request.get_json()
-    print(plant_info)
-    return jsonify(plant_info)
-
-@app.route('/serial/toggle_leds')
-def toggle_leds():
-    cmd_queue.append('<toggle_leds,0>')
+    db_con = sqlite3.connect('seedhub_db')
+    db_cur = db_con.cursor()
+    logs = {}
+    logs["date"] = datetime.now().isoformat()
+    logs["soil_moist"] = plant_info['soil_moist']
+    logs["air_temp"] = plant_info["air_temp"]
+    logs["air_humid"] = plant_info["air_humid"]
+    logs["air_qlty"] = plant_info["air_qlty"]
+    logs["p_id"] = arduino_plant_id
+    db_cur.execute("INSERT into plant_logs values(:date, :soil_moist, :air_temp, :air_humid, :air_qlty, :p_id)",logs)
+    db_con.commit()
+    db_con.close()
+    print(logs)
     return jsonify("OK")
 
 @app.route('/serial/get_cmd')
 def get_command():
-    cmd = None
+    cmd = []
     try:
-        cmd = cmd_queue.pop(0)
+        while not cmd_queue.empty():
+            cmd.append(cmd_queue.get(timeout=.1))
     except:
-        cmd = "None"
-    return jsonify({"cmd":cmd})
+        cmd = ["None"]
+    return jsonify({"cmds":cmd})
 
 if __name__ == "__main__":
     app.run(debug=True)

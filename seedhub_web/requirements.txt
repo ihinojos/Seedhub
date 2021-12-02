@@ -1,5 +1,6 @@
 Flask==2.0.2
 pyserial==3.5
 requests==2.26.0
-flask-socketio=5.1.1
-flask-serial=1.1.0
+flask-socketio==5.1.1
+flask-serial==1.1.0
+eventlet==0.33.0

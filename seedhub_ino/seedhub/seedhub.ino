@@ -2,6 +2,9 @@
 #include <SoftwareSerial.h>
 //============
 //save the initial time at startup
+unsigned long time_secs = millis();
+unsigned long time_mins = millis();
+unsigned long time_hrs = millis();
 unsigned long fans_time = millis(); // used for fan toggling 
 unsigned long soil_time = millis(); // used for checkup time
 unsigned long leds_time = millis(); // used for leds toggling
@@ -10,8 +13,10 @@ unsigned long fan_cycle = millis(); // used for keep track of time
 unsigned long pump_time = millis(); // used for water pump toggling
 unsigned long fade_time = millis(); // used for fading leds when on
 static const unsigned long ONE_HOUR = 3600000; // represents one hour
-unsigned long checkup_time = 300000; // soil check time, default is 5 mins
-unsigned long fan_minutes = 1800000;  // fan turn on cycle, default is 30 minutes
+static const unsigned long ONE_MINUTE = 60000;
+static const unsigned long ONE_SECOND = 1000;
+int checkup_time = 5; // soil check time, default is 5 mins
+int fan_minutes = 30;  // fan turn on cycle, default is 30 minutes
 //============
 #define DHTType     DHT11     // Type of DHT sensor
 #define DHTPin      9         // pin connected to DHT sensor
@@ -48,6 +53,8 @@ bool dimm_on = false;         // indicates whether leds dimm
 bool logs_on = false;         // indicates whether autolog is on
 bool programming_bt = false;  // indicates whether BT is in AT mode
 static int hours_passed = 0;
+static int minutes_passed = 0;
+static int seconds_passed = 0;
 //============
 int pref_soil_moisture = 40;    // user defined soil moisture (default is 40)
 int pref_pump_runtime = 1000;   // user defined pump time (seconds, def is 1)
@@ -67,11 +74,16 @@ void setup(){
   digitalWrite(relayPin, HIGH);
   dht.begin();
   delay(500);
-  //toggleLed(); //set led as on when circuit starts
 }
 
 //============
 void loop(){
+  unsigned long loop_time = millis();
+  if(loop_time - time_secs >= ONE_SECOND){
+    seconds_passed++;
+    if(seconds_passed % 60 == 0) seconds_passed = 0;
+    time_secs = loop_time;
+  }
   do_loop();
 }
 //============
@@ -107,6 +119,9 @@ void do_loop(){
     else if(strcmp(command, "set_fans") == 0 ){
       setFansRuntime(cmd_value);
     }
+    else if(strcmp(command, "set_fanm") == 0 ){
+      setFanCycleTime(cmd_value);
+    }
     else if(strcmp(command, "get_conf") == 0 ){
       printSettings();
     }
@@ -127,32 +142,38 @@ void do_loop(){
       toggleLogs();
     }
   }
-  // each five minute check the soil_moisture
-  if(info_time - soil_time > checkup_time){
-    // if the soil moisture is below desired level, turn pump;
-    if(soil_moisture < pref_soil_moisture){
-      togglePump();
-      pump_time = loop_time;
+  //every minute check if the water and time are right
+  if(loop_time - time_mins >= ONE_MINUTE){
+    minutes_passed++;
+    if(minutes_passed % checkup_time == 0){
+      // if the soil moisture is below desired level, turn pump;
+      if(soil_moisture < pref_soil_moisture){
+        togglePump();
+        pump_time = loop_time;
+      }
+      soil_time = loop_time;
     }
-    soil_time = loop_time;
+    // turn on the fans each fan_minutes
+    if(minutes_passed % fan_minutes == 0){
+      toggleFans();
+      fans_time = loop_time;
+    }
+    if(minutes_passed % 60 == 0 ) minutes_passed = 0;
+    time_mins = loop_time;
   }
   // handle brightness change
   if(loop_time - fade_time > 5 && dimm_on){
     handleBrightnessChange(loop_time);
   }
-  // toggle leds each led_hours
-  if(loop_time - leds_time > ONE_HOUR){
+  if(loop_time - time_hrs >= ONE_HOUR)
+  {
     hours_passed++;
-    if(hours_passed == led_hours){
-      hours_passed = 0;
+    // toggle leds each led_hours
+    if(hours_passed % led_hours == 0){  
       toggleLeds();
+      leds_time = loop_time;
     }
-    leds_time = loop_time;
-  }
-  // turn on the fans each fan_minutes
-  if(loop_time - fan_cycle > fan_minutes){
-    toggleFans();
-    fan_cycle = loop_time;
+    time_hrs = loop_time;
   }
   // handle pump status
   handlePumpStatus(loop_time);
@@ -168,18 +189,23 @@ void toggleLogs(){
   printLog("Toggling logs");
 }
 //============
+void setFanCycleTime(int minutes){
+  fan_minutes = minutes;
+  printLog("Set fan runtime OK");
+}
+//============
 void setFansRuntime(int seconds){
   pref_fans_runtime = seconds * 1000;
   printLog("Set fan runtime OK");
 }
 //============
 void setLedHours(int hours){
-  led_hours = hours * 1000 * 60 * 60;
+  led_hours = hours;
   printLog("Set led hours OK");
 }
 //============
 void setCheckupTime(int minutes){
-  checkup_time = minutes * 1000 * 60;
+  checkup_time = minutes;
   printLog("Set checkup time OK");
 }
 //============
@@ -289,15 +315,14 @@ void printInfo() {
   BTSerial.print("%\tAir quality:");
   BTSerial.print(air_quality);
   BTSerial.println("ppm");
-  Serial.print("Soil moisture:");
+  Serial.print("soil_moist:");
   Serial.print(soil_moisture);
-  Serial.print("%\tAir temperature:");
+  Serial.print("\tair_temp:");
   Serial.print(air_temperature);
-  Serial.print("C\tAir humidity:");
+  Serial.print("\tair_humid:");
   Serial.print(air_humidity);
-  Serial.print("%\tAir quality:");
-  Serial.print(air_quality);
-  Serial.println("ppm");
+  Serial.print("\tair_qlty:");
+  Serial.println(air_quality);
 }
 //============
 void readCommand() {
@@ -371,53 +396,65 @@ void printData() {
   Serial.print("Command: ");
   Serial.print(command);
   Serial.print("\tValue: ");
-  Serial.print(cmd_value);
+  Serial.println(cmd_value);
 }
 //============
 void printBTData() {
   BTSerial.print("Command: ");
   BTSerial.print(command);
   BTSerial.print("\tValue: ");
-  BTSerial.print(cmd_value);
+  BTSerial.println(cmd_value);
 }
 //============
 void printSettings(){
   Serial.print("Pref checkup time:");
-  Serial.print(checkup_time/60000);
+  Serial.print(checkup_time);
   Serial.print("m\tPref soil moisture:");
   Serial.print(pref_soil_moisture);
   Serial.print("%\tPref pump runtime:");
   Serial.print(pref_pump_runtime/1000);
   Serial.print("s\tPref fans runtime:");
   Serial.print(pref_fans_runtime/1000);
-  Serial.print("m\tPref fans cycle:");
-  Serial.print(fan_minutes/60000);
+  Serial.print("s\tPref fans cycle:");
+  Serial.print(fan_minutes);
   Serial.print("m\tPref led brightness:");
   Serial.print(led_bright);
-  Serial.print("%\tPref led hours:");
+  Serial.print("#\tPref led hours:");
   Serial.print(led_hours);
   Serial.print("h\tPref led animation:");
   Serial.print(dimm_on ? "Yes" : "No");
   Serial.print("\tAuto loggin on:");
-  Serial.println(logs_on ? "Yes" : "No");
+  Serial.print(logs_on ? "Yes" : "No");
+  Serial.print("\tSeconds passed:");
+  Serial.print(seconds_passed);
+  Serial.print("s\tMinutes passed: ");
+  Serial.print(minutes_passed);
+  Serial.print("m\tHours passed: ");
+  Serial.print(hours_passed);
+  Serial.println("h");
   BTSerial.print("Pref checkup time:");
-  BTSerial.print(checkup_time/60000);
+  BTSerial.print(checkup_time);
   BTSerial.print("m\tPref soil moisture:");
   BTSerial.print(pref_soil_moisture);
   BTSerial.print("%\tPref pump runtime:");
   BTSerial.print(pref_pump_runtime/1000);
-  BTSerial.print("s\tPref fans runtime:");
-  BTSerial.print(pref_fans_runtime/1000);
   BTSerial.print("s\tPref fans cycle:");
-  BTSerial.print(fan_minutes/60000);
+  BTSerial.print(fan_minutes);
   BTSerial.print("m\tPref led brightness:");
   BTSerial.print(led_bright);
-  BTSerial.print("%\tPref led hours:");
+  BTSerial.print("#\tPref led hours:");
   BTSerial.print(led_hours);
   BTSerial.print("h\tPref led animation:");
   BTSerial.print(dimm_on ? "Yes" : "No");
   BTSerial.print("\tAutologgin on:");
-  BTSerial.println(logs_on ? "Yes" : "No");
+  BTSerial.print(logs_on ? "Yes" : "No");
+  BTSerial.print("\tSeconds passed:");
+  BTSerial.print(seconds_passed);
+  BTSerial.print("s\tMinutes passed: ");
+  BTSerial.print(minutes_passed);
+  BTSerial.print("m\tHours passed: ");
+  BTSerial.print(hours_passed);
+  BTSerial.println("h");
 }
 //============
 void printLog(String txt){

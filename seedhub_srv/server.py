@@ -7,14 +7,13 @@ import subprocess
 from serial import serialutil
 from RepeatedTimer import RepeatedTimer
 
-plants = {}
 arduino = None
 
 def timeout(signum, frame):
     print("Command timed out")
     raise Exception("timedOutException")
 
-def connectToArduino(plant_id):
+def connectToArduino():
     tty_found = None
     cmd = "find /dev/serial/by-path/. -maxdepth 1 -type l -ls | grep ttyUSB*"
     while True:
@@ -23,27 +22,32 @@ def connectToArduino(plant_id):
         if tty_found.returncode == 0:
             tty = "".join(["/dev/", tty_found.stdout.decode().split('/')[-1].strip('\n')])
             print("Found serial device  at",tty)
-            plants[plant_id] = serial.Serial(port=tty, baudrate=9600, timeout=2)
+            arduino = serial.Serial(port=tty, baudrate=9600, timeout=.2)
             time.sleep(1)
-            plants[plant_id].flushInput()
-            plants[plant_id].flushOutput()
-            plants[plant_id].read_all()
-            return plants[plant_id]
-            
+            arduino.flushInput()
+            arduino.flushOutput()
+            arduino.read_all()
+            return arduino
+
 def writeToArduino(command):
     arduino.write(bytes(command, 'ascii'))
     time.sleep(.1)
-    data = arduino.readline().decode('ascii')
-    data.split('\t')
-    return data
+    try:
+        data = arduino.readline().decode('ascii')
+        data.split('\t')
+        return data
+    except:
+        return None
 
 def getCommand():
     url = 'http://127.0.0.1:5000/serial/get_cmd'
     response = requests.get(url)
-    cmd = response.json()
-    if cmd["cmd"] != "None":
-        writeToArduino(cmd["cmd"])
-    
+    cmds = response.json()
+    for cmd in cmds["cmds"]:
+        print(cmd)
+        if cmd != "None":
+            writeToArduino(cmd)
+
 def sendStatus():
     url = 'http://127.0.0.1:5000/api/save_info'
     arduino.write(bytes('<read_info,0>', 'ascii'))
@@ -58,33 +62,31 @@ def sendStatus():
                 data[log[0]] = log[1].strip('\r\n')
             response = requests.post(url, json=data)
             #print(response.content)
-    except serialutil.SerialException:
-        return
+    except:
+        pass
 
-def start(plant_id):
-    plants[plant_id] = plant_id
+if __name__ == '__main__':
     arduino = None
     signal.signal(signal.SIGALRM, timeout)
     signal.alarm(60)
     try:
-        plants[plant_id] = connectToArduino(plant_id)
+        arduino = connectToArduino()
         signal.alarm(0)
     except Exception as exc:
-        plants[plant_id] = None
+        arduino = None
         print(exc)
-    if plants[plant_id]:
-        print("Arduino found, starting daemon")
-        stats = None
-        cmd_d = None
+    if arduino:
         try:
-            stats = RepeatedTimer(3, sendStatus, plant_id)
-            cmd_d = RepeatedTimer(5, getCommand, plant_id)
+            print("Arduino found, starting daemon")
+            getCommand()
+            stats = RepeatedTimer(3, sendStatus)
+            cmd_d = RepeatedTimer(60, getCommand)
+            while True:
+                data = input("Type 0 to terminate:")
+                if data == '0' : raise Exception
+                resp = writeToArduino(data)
+                print(resp)
         except:
             stats.stop()
             cmd_d.stop()
-
-        finally:
-            arduino.close()
-    
-if __name__ == '__main__':
-    start()
+            arduino.close() 
