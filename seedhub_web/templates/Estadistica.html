@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
 <script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
 {% endblock %}
-{% set pg_title = Estadística  %}
+{% set pg_title = "Estadística "+plant['name'] %}
 {% set body_class = "hold-transition sidebar-mini" %}
 {% block body %}
 <div class="wrapper">
@@ -38,8 +38,7 @@
       <div class="card card-solid">
         <div class="card-body pb-0">
           <div class="row">
-
-    <div class="ct-chart ct-golden-section">
+              <div class="ct-chart ct-golden-section" id="static_chart">
             </div>
           </div>
         </div>
@@ -51,17 +50,37 @@
 {% block scripts %}
 {{ super() }}
 <script>
-  var data = {
-    // A labels array that can contain any sort of values
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-    // Our series array that contains series objects or in this case series data arrays
-    series: [
-      [5, 2, 4, 2, 0]
-    ]
-  };
-  // Create a new line chart object where as first parameter we pass in a selector
-  // that is resolving to our chart container element. The Second parameter
-  // is the actual data object.
-  new Chartist.Line('.ct-chart', data);
+  class Chart{
+    constructor(x_data, y_data, chart_id){
+      this.x_data = x_data;
+      this.y_data = y_data;
+      this.chart_id = chart_id
+    }
+    createGraph(){
+      var data = {
+        labels: this.x_data,
+        series: this.y_data
+      };
+
+      var options = {
+        axisX:{
+          showGrid:false,
+          showLabel:false
+        },
+        axisY:{
+          offset:20
+        }
+      }
+      new Chartist.Line(this.chart_id, data, options);
+    }
+  }
+  var request = $.get('/get_plant_logs');
+  var done = request.done(function(plant_data){
+    var x_data = plant_data.dates;
+    var y_data = [plant_data.soil_moist, plant_data.air_temp,
+                  plant_data.air_humid, plant_data.air_qlty];
+    var chart = new Chart(x_data, y_data, '#static_chart');
+    chart.createGraph();
+  })
 </script>
 {% endblock %}

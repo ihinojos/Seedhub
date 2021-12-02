@@ -1,4 +1,5 @@
 from datetime import datetime
+from re import A
 import sqlite3, random, queue, json, time
 from flask import Flask, render_template, jsonify, request, url_for, flash, redirect, session, make_response
 
@@ -118,38 +119,38 @@ def data():
     global arduino_plant_id
     db_con = sqlite3.connect('seedhub_db')
     db_cur = db_con.cursor()
-    try:
-        db_cur.execute("SELECT * FROM plant_logs WHERE id=:p_id", {"p_id":arduino_plant_id})
-        records = db_cur.fetchall()
-        logs = []
-        if len(records) > 0:
-            log = {}
-            for record in records:
-                log["date"]
-                log["soil_moist"] = record[0]
-                log["air_temp"] = record[1]
-                log["air_humid"] = record[2]
-                log["air_qlty"] = record[3]
-                log["p_id"] = record[4]
-                logs.append(log)
-        return logs
-    except:
-        pass
-    finally:
-        db_con.close()
-
-
-    response = make_response(json.dumps(data))
-
-    response.content_type = 'application/json'
-
-    return response
+    db_cur.execute("SELECT * FROM plant_logs WHERE p_id=:p_id", {"p_id":arduino_plant_id})
+    records = db_cur.fetchall()
+    dates = []
+    soil_moist = []
+    air_temp = []
+    air_humid =[]
+    air_qlty = []
+    if len(records) > 0:
+        for record in records:
+            dates.append(record[0])                
+            soil_moist.append(record[1])
+            air_temp.append(record[2])
+            air_humid.append(record[3])
+            air_qlty.append(record[4])
+    data = {
+        "dates" : dates,
+        "soil_moist" : soil_moist,
+        "air_temp" : air_temp,
+        "air_humid" : air_humid,
+        "air_qlty" : air_qlty
+    }
+    db_cur.close()
+    db_con.close()
+    return jsonify(data)
 
 @app.route('/connect_arduino')
 def connect_to_arduino():
     global arduino_plant_id
     arduino_plant_id = str(request.args.get('link_plant'))
     plant_conf = get_plant_config(arduino_plant_id)
+    while not cmd_queue.empty():
+        cmd_queue.get()
     cmd_queue.put("<set_soil,{val}>".format(val=plant_conf["soil_moist"]))
     cmd_queue.put("<set_soil,{val}>".format(val=plant_conf["soil_moist"]))
     cmd_queue.put("<set_ledb,{val}>".format(val=plant_conf["led_bright"]))
