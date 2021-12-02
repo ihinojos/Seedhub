@@ -159,7 +159,10 @@ def connect_to_arduino():
     cmd_queue.put("<set_pump,{val}>".format(val=plant_conf["pump_runtime"]))
     cmd_queue.put("<set_check,{va}>".format(va=plant_conf["checkup_time"]))
     cmd_queue.put("<toggle_dimm,0>" if plant_conf["led_dimming"] == 1 else "None")
-    return redirect(url_for('estadistica'))
+    plant = get_plant_by_id(arduino_plant_id)
+    plant["conf"] = get_plant_config(plant["id"])
+    return render_template('Estadistica.html', plant=plant);
+    
         
 @app.route('/log_out', methods=['POST'])
 def log_out():

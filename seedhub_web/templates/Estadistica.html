@@ -4,31 +4,64 @@
 <link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
 <script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
 {% endblock %}
-{% set pg_title = "Editar "+plant["name"] %}
+{% set pg_title = Estadística %}
 {% set body_class = "hold-transition sidebar-mini" %}
 {% block body %}
+<div class="wrapper">
+  {% include "navbars.html" %}
+  <div class="content-wrapper">
+     <!-- Content Header (Page header) -->
+     <section class="content-header">
+      <div class="container-fluid">
+          {% include "content_header.html" %}
+          <div class="row mb-2">
+              <div class="col-sm-12">
+                {% with message = get_flashed_messages( with_categories=true ) %}
+                  {% if message %}
+                    {% for category, data in message %}
+                    <div class="alert {{category}} alert-dismissible fade show" role="alert">
+                      <button type="button" class="close" data-dismiss="alert" aria-label="Close" class="close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                      {{data}}
+                    </div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+              </div>
+            </div>
+      </div><!-- /.container-fluid -->
+     </section>
+     <!-- Main content -->
+    <section class="content">
+      <!-- Default box -->
+      <div class="card card-solid">
+        <div class="card-body pb-0">
+          <div class="row">
 
-
-<html>
-  <head>
-  </head>
-  <body>
     <div class="ct-chart ct-golden-section">
-
-    </div>
-    <script>
-      var data = {
-        // A labels array that can contain any sort of values
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-        // Our series array that contains series objects or in this case series data arrays
-        series: [
-          [5, 2, 4, 2, 0]
-        ]
-      };
-      // Create a new line chart object where as first parameter we pass in a selector
-      // that is resolving to our chart container element. The Second parameter
-      // is the actual data object.
-      new Chartist.Line('.ct-chart', data);
-    </script>
-  </body>
-</html>
+            </div>
+          </div>
+        </div>
+      </section>
+  </div>
+  {% include "content_footer.html" %}
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script>
+  var data = {
+    // A labels array that can contain any sort of values
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    // Our series array that contains series objects or in this case series data arrays
+    series: [
+      [5, 2, 4, 2, 0]
+    ]
+  };
+  // Create a new line chart object where as first parameter we pass in a selector
+  // that is resolving to our chart container element. The Second parameter
+  // is the actual data object.
+  new Chartist.Line('.ct-chart', data);
+</script>
+{% endblock %}
