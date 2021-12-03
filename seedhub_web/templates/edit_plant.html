@@ -100,6 +100,11 @@
                                             <label for="html">Sí</label><br>
                                             <input type="radio" id="css" name="led_dimming" checked value="False">
                                             <label for="css">No</label><br>
+                                        {% else %}
+                                            <input type="radio" id="html" name="led_dimming" value="True">
+                                            <label for="html">Sí</label><br>
+                                            <input type="radio" id="css" name="led_dimming" checked value="False">
+                                            <label for="css">No</label><br>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -146,12 +151,16 @@
                     </div>
                 </div>
                 <div class="modal-footer justify-content-between" style="justify-content: center!important;">
-                  <button id="buttonModal" type="submit" name="edit_plant" value="{{ plant['id'] }}" class="btn btn-primary" style="background-color: #739d09;">Guardar Cambios</button>
+                  <button id="buttonModal" type="submit" name="edit_plant" value="{{ plant['id'] }}" class="btn btn-primary" style="background-color: #32608b;">Guardar Cambios</button>
                 </div>
               </form>
+            <div class="row">
+            <div class="col"></div>
             <form method="get" action="/connect_arduino">
-                <button id="buttonModal" type="submit" name="link_plant" value="{{ plant['id'] }}" class="btn btn-primary" style="background-color: #739d09;">Conectar Arduino</button>  
+                <button id="buttonModal" type="submit" name="link_plant" value="{{ plant['id'] }}" class="btn btn-danger" style="background-color: #3d940b;">Conectar Arduino</button>  
             </form>
+            <div class="col"></div>
+            </div>
         </section>
         <!-- /.content -->
     </div>

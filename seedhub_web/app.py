@@ -6,6 +6,7 @@ from flask import Flask, render_template, jsonify, request, url_for, flash, redi
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecretkey'
 cmd_queue = queue.Queue()
+sensor_queue = queue.Queue()
 arduino_plant_id = None
 sensor_data = {}
 
@@ -147,8 +148,13 @@ def data():
 
 @app.route('/get_sensor_data', methods=['GET'])
 def sense():
-    global sensor_data
-    return jsonify(sensor_data)
+    global sensor_queue, sensor_data
+    if sensor_queue.empty():
+        print(sensor_data)
+        return jsonify(sensor_data)
+    data = sensor_queue.get()
+    print(data)
+    return jsonify(data)
 
 @app.route('/connect_arduino')
 def connect_to_arduino():
@@ -313,20 +319,22 @@ def save_info():
     global arduino_plant_id
     global sensor_data
     plant_info = request.get_json()
+    if not arduino_plant_id:
+        return
     db_con = sqlite3.connect('seedhub_db')
     db_cur = db_con.cursor()
     logs = {}
     logs["date"] = datetime.now().isoformat()
-    sensor_data["time"] = time() * 1000
+    sensor_data["time"] = time.time() * 1000
     sensor_data["soil_moist"] = logs["soil_moist"] = plant_info['soil_moist']
     sensor_data["air_temp"] = logs["air_temp"] = plant_info["air_temp"]
     sensor_data["air_humid"] = logs["air_humid"] = plant_info["air_humid"]
     sensor_data["air_qlty"] = logs["air_qlty"] = plant_info["air_qlty"]
+    sensor_queue.put_nowait(sensor_data)
     logs["p_id"] = arduino_plant_id
     db_cur.execute("INSERT into plant_logs values(:date, :soil_moist, :air_temp, :air_humid, :air_qlty, :p_id)",logs)
     db_con.commit()
     db_con.close()
-    print(logs)
     return jsonify("OK")
 
 @app.route('/serial/get_cmd')
@@ -341,3 +349,4 @@ def get_command():
 
 if __name__ == "__main__":
     app.run(debug=True)
+    sensor_queue.maxsize = 100

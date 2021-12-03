@@ -9,6 +9,17 @@
 <script src="http://code.highcharts.com/modules/exporting.js"></script>
 <!--Gauge  -->
 <script type="text/javascript" src="http://pubnub.github.io/eon/lib/eon.js"></script>
+<style>
+  .jumbotron{
+      widows: 150px;
+      height: 220px;
+      justify-content: center;
+  }
+
+  .row{
+      justify-content: center;
+  }
+</style>
 {% endblock %}
 {% set pg_title = "Estadística "+plant['name'] %}
 {% set body_class = "hold-transition sidebar-mini" %}
@@ -39,17 +50,56 @@
       </div><!-- /.container-fluid -->
      </section>
      <!-- Main content -->
-    <section class="content">
+   <section class="content">
       <!-- Default box -->
       <div class="card card-solid">
         <div class="card-body pb-0">
-          <div class="row">
+          <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm jumbotron mx-1">
+                      <h1>Soil Moisture</h1>
+                      <h1 class="soil_moist_sens"> Sensor : </h1>
+                </div>
+                <div class="col-sm jumbotron mx-1">
+                      <h1>Air temperature</h1>
+                      <h1 class="air_temp_sens">Sensor :</h1>
+                </div>
+                <div class="col-sm jumbotron mx-1">
+                    <h1>Air humidity</h1>
+                    <h1 class="air_humid_sens"> Sensor : </h1>
+                </div>
+                <div class="col-sm jumbotron mx-1">
+                    <h1>Air quality</h1>
+                    <h1 class="air_qlty_sens">Sensor :</h1>
+                </div>
+            </div>
+            </div>
+            <div class="row">
+                <div class="col">
+              <div class="container-fluid container-lg" id="general_data_chart"></div>
+                    </div>
+            </div>
+            <div class="row">
+                <div class="col col-sm-12 col-md-12 col-lg-6">
+              <div class="container-fluid container-md" id="soil_moist_chart"></div>
 
-              <div class="ct-chart ct-golden-section" id="static_chart"></div>
-              <div id="container"></div>
-          </div>
+                </div>
+                <div class="col col-sm-12 col-md-12 col-lg-6">
+              <div class="container-fluid container-md" id="air_temp_chart"></div>
+
+                </div>
+                <div class="col col-sm-12 col-md-12 col-lg-6">
+              <div class="container-fluid container-md" id="air_humid_chart"></div>
+
+                </div>
+                <div class="col col-sm-12 col-md-12 col-lg-6">
+              <div class="container-fluid container-md" id="air_qlty_chart"></div>
+
+                </div>
+            </div>
         </div>
-      </section>
+    </div>
+   </section>
   </div>
   {% include "content_footer.html" %}
 </div>
@@ -57,40 +107,274 @@
 {% block scripts %}
 {{ super() }}
 <script>
-</script>
-<script>
-  class Chart{
-    constructor(x_data, y_data, chart_id){
-      this.x_data = x_data;
-      this.y_data = y_data;
-      this.chart_id = chart_id
-    }
-    createGraph(){
-      var data = {
-        labels: this.x_data,
-        series: this.y_data
-      };
+  var general_data_chart;
+  var soil_moist_chart;
+  var air_humid_chart;
+  var air_temp_chart;
+  var air_qlty_chart;
+  function requestData()
+  {
+      // Ajax call to get the Data from Flask
+      var requests = $.get('/get_sensor_data');
+      var tm = requests.done(function(sensor_data)
+      {
+          // Soil moisture
+          var soil_moist_series = soil_moist_chart.series[0],
+              soil_moist_shift = soil_moist_series.data.length > 50;
 
-      var options = {
-        axisX:{
-          showGrid:false,
-          showLabel:false
-        },
-        axisY:{
-          offset:20
-        }
-      }
-      new Chartist.Line(this.chart_id, data, options);
-    }
+          // Air temperature
+          var air_temp_series = air_temp_chart.series[0],
+              air_temp_shift = air_temp_series.data.length > 50;
+
+          // Air humidity
+          var air_humid_series = air_humid_chart.series[0],
+              air_humid_shift = air_humid_series.data.length > 50;
+            
+          // Air quaity
+          var air_qlty_series = air_qlty_chart.series[0],
+              air_qlty_shift = air_qlty_series.data.length > 50;
+
+          var soil_data = [];
+          soil_data.push(sensor_data.time);
+          soil_data.push(Number(sensor_data.soil_moist));
+
+          var temp_data = [];
+          temp_data.push(sensor_data.time);
+          temp_data.push(Number(sensor_data.air_temp));
+          
+          var humid_data = [];
+          humid_data.push(sensor_data.time);
+          humid_data.push(Number(sensor_data.air_humid));
+
+          var qlty_data = [];
+          qlty_data.push(sensor_data.time);
+          qlty_data.push(Number(sensor_data.air_qlty));
+
+
+          soil_moist_chart.series[0].addPoint(soil_data, true, soil_moist_shift);
+          air_temp_chart.series[0].addPoint(temp_data, true, air_temp_shift);
+          air_humid_chart.series[0].addPoint(humid_data, true, air_humid_shift);
+          air_qlty_chart.series[0].addPoint(qlty_data, true, air_qlty_shift);
+
+
+          $(".soil_moist_sens").text("");
+          $(".soil_moist_sens").text(Math.round(sensor_data.soil_moist)+"%");
+
+          $(".air_temp_sens").text("");
+          $(".air_temp_sens").text(Math.round(sensor_data.air_temp)+"C");
+
+          $(".air_humid_sens").text("");
+          $(".air_humid_sens").text(Math.round(sensor_data.air_humid)+"%");
+
+          $(".air_qlty_sens").text("");
+          $(".air_qlty_sens").text(Math.round(sensor_data.air_qlty)+"ppm");
+          
+          // call it again after one second
+          setTimeout(requestData, 2000);
+      });
   }
-  var request = $.get('/get_plant_logs');
-  var done = request.done(function(plant_data){
-    var x_data = plant_data.dates;
-    var y_data = [plant_data.soil_moist, plant_data.air_temp,
-                  plant_data.air_humid, plant_data.air_qlty];
-    var chart = new Chart(x_data, y_data, '#static_chart');
-    chart.createGraph();
-  })
+  function getHistoricalData(){
+    var request = $.get('/get_plant_logs');
+    var done = request.done(function(plant_data){
+      var soil = []
+      var temp = []
+      var humid = []
+      var qlity = []
+      for(var i = 0; i<plant_data.dates.length; i++){
+        var log_time = new Date(plant_data.dates[i]).getTime();
+        var soil_moist = Number(plant_data.soil_moist[i]);
+        var air_temp = Number(plant_data.air_temp[i]);
+        var air_humid = Number(plant_data.air_humid[i]);
+        var air_qlty = Number(plant_data.air_qlty[i]);
+        soil.push([log_time, soil_moist]);
+        temp.push([log_time, air_temp]);
+        humid.push([log_time, air_humid]);
+        qlity.push([log_time, air_qlty]);
+      }
+      general_data_chart = new Highcharts.Chart({
+        chart:{
+          renderTo: 'general_data_chart',
+          defaultSeriesType: 'line'
+        },
+        title:{
+          text: 'Historic plant data'
+        },
+        xAxis:{
+          type: 'datetime',
+          tickPixelInterval: 150,
+          maxZoom: 20 * 1000
+        },
+        yAxis:{
+          minPadding:0.2,
+          maxPadding:0.2,
+          title:{
+            text: 'Value',
+            margin: 69
+          }
+        },
+        series:[{
+              color : '#A0BABA',
+              lineColor: '#567676',
+              name: 'Soil moisture',
+              data: soil
+          },
+          {
+              color : '#CDD3F4',
+              lineColor: '#687ADE',
+              name: 'Air temperature',
+              data: temp
+          },
+          {
+              color : '#A0C1D1',
+              lineColor: '#5089A5',
+              name: 'Air humidity',
+              data: humid
+          },
+          {
+              color : '#92A6B5',
+              lineColor: '#232C33',
+              name: 'Air quality',
+              data: qlity
+            }]
+      });
+    });
+  }
+  $(document).ready(function()
+  {
+    getHistoricalData();
+      // --------------Chart 1 ----------------------------
+      soil_moist_chart = new Highcharts.Chart({
+          chart:
+              {
+              renderTo: 'soil_moist_chart',
+              defaultSeriesType: 'area',
+              events: {
+                  load: requestData
+                      }
+              },
+          title:
+              {
+              text: 'Soil moisture'
+              },
+          xAxis: {
+              type: 'datetime',
+              tickPixelInterval: 150,
+              maxZoom: 20 * 1000
+                  },
+          yAxis: {
+              minPadding: 0.2,
+              maxPadding: 0.2,
+              title: {
+                  text: 'Value',
+                  margin: 80
+                      }
+                   },
+          series: [{
+              color : '#A0BABA',
+              lineColor: '#567676',
+              name: 'Soil moisture',
+              data: []
+          }]
+      });
+      // --------------Chart 1 Ends - -----------------
+      air_temp_chart = new Highcharts.Chart({
+          chart:
+              {
+                  renderTo: 'air_temp_chart',
+                  defaultSeriesType: 'area',
+                  events: {
+                  }
+              },
+          title:
+              {
+                  text: 'Air temperature'
+              },
+          xAxis: {
+              type: 'datetime',
+              tickPixelInterval: 150,
+              maxZoom: 20 * 1000
+          },
+          yAxis: {
+              minPadding: 0.2,
+              maxPadding: 0.2,
+              title: {
+                  text: 'Value',
+                  margin: 80
+              }
+          },
+          series: [{
+              color : '#CDD3F4',
+              lineColor: '#687ADE',
+              name: 'Air temperature',
+              data: []
+          }]
+      });
+
+      air_humid_chart = new Highcharts.Chart({
+          chart:
+              {
+                  renderTo: 'air_humid_chart',
+                  defaultSeriesType: 'area',
+                  events: {
+                  }
+              },
+          title:
+              {
+                  text: 'Air humidity'
+              },
+          xAxis: {
+              type: 'datetime',
+              tickPixelInterval: 150,
+              maxZoom: 20 * 1000
+          },
+          yAxis: {
+              minPadding: 0.2,
+              maxPadding: 0.2,
+              title: {
+                  text: 'Value',
+                  margin: 80
+              }
+          },
+          series: [{
+              color : '#A0C1D1',
+              lineColor: '#5089A5',
+              name: 'Air humidity',
+              data: []
+          }]
+      });
+
+      air_qlty_chart = new Highcharts.Chart({
+          chart:
+              {
+                  renderTo: 'air_qlty_chart',
+                  defaultSeriesType: 'area',
+                  events: {
+                  }
+              },
+          title:
+              {
+                  text: 'Air quality'
+              },
+          xAxis: {
+              type: 'datetime',
+              tickPixelInterval: 150,
+              maxZoom: 20 * 1000
+          },
+          yAxis: {
+              minPadding: 0.2,
+              maxPadding: 0.2,
+              title: {
+                  text: 'Value',
+                  margin: 80
+              }
+          },
+          series: [{
+            color : '#92A6B5',
+              lineColor: '#232C33',
+              name: 'Air quality',
+              data: []
+          }]
+      });
+  });
 </script>
 {% endblock %}
-https://github.com/soumilshah1995/Flask-Charts-Youtube-Tutorials-/blob/master/Multiple%20Live%20Graph%20with%20Gauge/templates/index.html
