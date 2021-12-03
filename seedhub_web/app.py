@@ -7,6 +7,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecretkey'
 cmd_queue = queue.Queue()
 arduino_plant_id = None
+sensor_data = {}
 
 def add_plant(plant_src):
     if plant_src == None:
@@ -114,7 +115,7 @@ def get_plant_config(p_id):
     finally:
         db_con.close()
 
-@app.route('/get_plant_logs', methods=["GET", "POST"])
+@app.route('/get_plant_logs', methods=["GET"])
 def data():
     global arduino_plant_id
     db_con = sqlite3.connect('seedhub_db')
@@ -144,6 +145,11 @@ def data():
     db_con.close()
     return jsonify(data)
 
+@app.route('/get_sensor_data', methods=['GET'])
+def sense():
+    global sensor_data
+    return jsonify(sensor_data)
+
 @app.route('/connect_arduino')
 def connect_to_arduino():
     global arduino_plant_id
@@ -164,7 +170,6 @@ def connect_to_arduino():
     plant["conf"] = get_plant_config(plant["id"])
     return render_template('Estadistica.html', plant=plant);
     
-        
 @app.route('/log_out', methods=['POST'])
 def log_out():
     if request.method == "POST":
@@ -306,15 +311,17 @@ def index():
 @app.route('/api/save_info', methods=['POST'])
 def save_info():
     global arduino_plant_id
+    global sensor_data
     plant_info = request.get_json()
     db_con = sqlite3.connect('seedhub_db')
     db_cur = db_con.cursor()
     logs = {}
     logs["date"] = datetime.now().isoformat()
-    logs["soil_moist"] = plant_info['soil_moist']
-    logs["air_temp"] = plant_info["air_temp"]
-    logs["air_humid"] = plant_info["air_humid"]
-    logs["air_qlty"] = plant_info["air_qlty"]
+    sensor_data["time"] = time() * 1000
+    sensor_data["soil_moist"] = logs["soil_moist"] = plant_info['soil_moist']
+    sensor_data["air_temp"] = logs["air_temp"] = plant_info["air_temp"]
+    sensor_data["air_humid"] = logs["air_humid"] = plant_info["air_humid"]
+    sensor_data["air_qlty"] = logs["air_qlty"] = plant_info["air_qlty"]
     logs["p_id"] = arduino_plant_id
     db_cur.execute("INSERT into plant_logs values(:date, :soil_moist, :air_temp, :air_humid, :air_qlty, :p_id)",logs)
     db_con.commit()

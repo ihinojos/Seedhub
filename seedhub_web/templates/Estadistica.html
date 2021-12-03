@@ -3,6 +3,12 @@
 {% block style %}
 <link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
 <script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+<!--High CHART LIVE  -->
+<script src="http://code.highcharts.com/highcharts.js"></script>
+<script src="http://code.highcharts.com/highcharts-more.js"></script>
+<script src="http://code.highcharts.com/modules/exporting.js"></script>
+<!--Gauge  -->
+<script type="text/javascript" src="http://pubnub.github.io/eon/lib/eon.js"></script>
 {% endblock %}
 {% set pg_title = "Estadística "+plant['name'] %}
 {% set body_class = "hold-transition sidebar-mini" %}
@@ -38,8 +44,9 @@
       <div class="card card-solid">
         <div class="card-body pb-0">
           <div class="row">
-              <div class="ct-chart ct-golden-section" id="static_chart">
-            </div>
+
+              <div class="ct-chart ct-golden-section" id="static_chart"></div>
+              <div id="container"></div>
           </div>
         </div>
       </section>
@@ -49,6 +56,8 @@
 {% endblock %}
 {% block scripts %}
 {{ super() }}
+<script>
+</script>
 <script>
   class Chart{
     constructor(x_data, y_data, chart_id){
@@ -84,3 +93,4 @@
   })
 </script>
 {% endblock %}
+https://github.com/soumilshah1995/Flask-Charts-Youtube-Tutorials-/blob/master/Multiple%20Live%20Graph%20with%20Gauge/templates/index.html
